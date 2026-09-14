@@ -5,7 +5,8 @@
    ניהול תצוגות, שיחות, אנשי קשר, יומן, תא קולי, הקלטות ועוד.
    ========================================================= */
 
-const api = window.api;
+// הערה: `api` נחשף כבר כמשתנה גלובלי דרך contextBridge בקובץ preload,
+// לכן אין להצהיר עליו שוב (const api = ...) — זה יגרום לשגיאת תחביר.
 
 const State = {
   status: { state: 'disconnected', device: null, mode: 'simulation', battery: null, muted: false, recording: false },
