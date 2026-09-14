@@ -46,6 +46,11 @@ function createWindow() {
     }
   });
 
+  // אישור גישה למיקרופון (הקלטות + ניטור בייביסיטר) — מקומי בלבד
+  mainWindow.webContents.session.setPermissionRequestHandler((_wc, permission, cb) => {
+    cb(permission === 'media' || permission === 'audioCapture');
+  });
+
   mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 
   mainWindow.once('ready-to-show', () => {
@@ -73,12 +78,27 @@ function emit(channel, payload) {
 }
 
 // ---------- אתחול השירותים ----------
+// מעתיק את גשר ה-PowerShell למקום כתיב מחוץ ל-asar (powershell לא קורא מתוך asar)
+function ensureBridgeScript() {
+  const src = path.join(__dirname, 'bt-bridge.ps1');
+  const dest = path.join(app.getPath('userData'), 'bt-bridge.ps1');
+  try {
+    const content = fs.readFileSync(src);
+    fs.writeFileSync(dest, content);
+  } catch (e) {
+    // אם ההעתקה נכשלת, ננסה להשתמש במקור
+    return src;
+  }
+  return dest;
+}
+
 function initServices() {
   store = new Store(userDataDir());
 
   bluetooth = new BluetoothService({
     recordingsDir: recordingsDir(),
-    store
+    store,
+    bridgeScript: ensureBridgeScript()
   });
 
   // חיבור אירועי הבלוטוס אל המסך
@@ -104,11 +124,21 @@ function registerIpc() {
   ipcMain.handle('call:hangup', async () => bluetooth.hangup());
   ipcMain.handle('call:sendDtmf', async (_e, digit) => bluetooth.sendDtmf(digit));
   ipcMain.handle('call:toggleMute', async () => bluetooth.toggleMute());
-  ipcMain.handle('call:simulateIncoming', async () => bluetooth.simulateIncoming());
+  ipcMain.handle('bt:openSettings', async () => bluetooth.openBluetoothSettings());
 
   // --- הקלטות ---
-  ipcMain.handle('rec:start', async () => bluetooth.startRecording());
-  ipcMain.handle('rec:stop', async () => bluetooth.stopRecording());
+  // שמירת הקלטת מיקרופון אמיתית (מגיעה מהמסך כ-ArrayBuffer)
+  ipcMain.handle('rec:save', async (_e, { name, buffer }) => {
+    try {
+      const safe = String(name || 'הקלטה').replace(/[\\/:*?"<>|]/g, '_');
+      const file = path.join(recordingsDir(), `${safe}.webm`);
+      fs.writeFileSync(file, Buffer.from(buffer));
+      return { ok: true, path: file };
+    } catch (e) {
+      return { ok: false, err: e.message };
+    }
+  });
+
   ipcMain.handle('rec:list', async () => {
     const dir = recordingsDir();
     const files = fs.existsSync(dir) ? fs.readdirSync(dir) : [];
@@ -152,6 +182,11 @@ app.whenReady().then(() => {
   initServices();
   registerIpc();
   createWindow();
+
+  // זיהוי אוטומטי של פלאפון שכבר מחובר בבלוטוס
+  mainWindow.webContents.once('did-finish-load', () => {
+    setTimeout(() => bluetooth.autoDetect().catch(() => {}), 800);
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

@@ -25,6 +25,41 @@ const VIEW_TITLES = {
   devices: 'חיבור בלוטוס', settings: 'הגדרות'
 };
 
+/* ==================== מקליט אמיתי (מיקרופון המחשב) ==================== */
+const Recorder = {
+  mr: null, chunks: [], stream: null, active: false, startedAt: 0, _label: 'הקלטה',
+  async start(label) {
+    if (this.active) return;
+    this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    this.mr = new MediaRecorder(this.stream);
+    this.chunks = [];
+    this.mr.ondataavailable = (e) => { if (e.data && e.data.size) this.chunks.push(e.data); };
+    this.mr.start();
+    this.active = true;
+    this.startedAt = Date.now();
+    this._label = label || 'הקלטה';
+  },
+  stop() {
+    if (!this.active) return Promise.resolve(null);
+    return new Promise((resolve) => {
+      this.mr.onstop = async () => {
+        try {
+          const blob = new Blob(this.chunks, { type: 'audio/webm' });
+          const buffer = await blob.arrayBuffer();
+          const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+          const r = await api.rec.save({ name: `${this._label}_${stamp}`, buffer });
+          resolve(r);
+        } catch (e) { resolve(null); }
+        finally {
+          if (this.stream) this.stream.getTracks().forEach((t) => t.stop());
+          this.active = false;
+        }
+      };
+      this.mr.stop();
+    });
+  }
+};
+
 /* ==================== עזרי תצוגה ==================== */
 function toast(msg, type = '') {
   const host = $('#toastHost');
@@ -199,9 +234,9 @@ const Views = {
           <h3>איך זה עובד?</h3>
           <div class="sub">מצב בייביסיטר / ניטור חדר</div>
           <p style="color:var(--muted); line-height:1.7; font-size:13.5px">
-            כשהפלאפון הכשר מונח בחדר הילד, המחשב מאזין דרך ערוץ השמע של הבלוטוס.
-            כאשר רמת הרעש (בכי / קול) חוצה את הסף שהגדרתם — תקבלו התראה מיידית,
-            והמערכת יכולה לחייג אליכם חזרה אוטומטית.
+            המחשב מאזין לחדר דרך <b>המיקרופון של המחשב</b> ומודד את רמת הרעש בזמן אמת.
+            כאשר רמת הרעש (בכי / קול) חוצה את הסף שהגדרתם — תקבלו התראה מיידית.
+            הצבתם את המחשב ליד הילד? זהו ניטור אמיתי של רעש בחדר.
           </p>
           <div class="setting-row">
             <div class="s-main"><div class="t">סף התראה</div><div class="d">רמת רעש שמעליה תישלח התראה</div></div>
@@ -219,25 +254,26 @@ const Views = {
     return `
       <div class="grid cols-2">
         <div class="card">
-          <h3>חיבור לפלאפון כשר</h3>
-          <div class="sub">המחשב מתחזה לדיבורית בלוטוס — חברו כל טלפון, גם כשר</div>
+          <h3>חיבור לפלאפון</h3>
+          <div class="sub">חיבור אמיתי דרך פורט ה-Serial שהפלאפון חושף בבלוטוס</div>
           <div class="device-scan">
             <button class="btn" id="btnScan">🔍 חיפוש מכשירים</button>
-            <button class="btn ghost sm" id="btnSimIncoming">📲 הדמיית שיחה נכנסת</button>
+            <button class="btn ghost sm" id="btnBtSettings">⚙️ הגדרות בלוטוס של Windows</button>
             <div class="spinner" id="scanSpin" hidden></div>
           </div>
           <div class="list" id="deviceList">
-            ${emptyMini('לחצו על "חיפוש מכשירים" כדי להתחיל')}
+            ${emptyMini('לחצו על "חיפוש מכשירים" כדי לזהות פלאפון מחובר')}
+          </div>
+          <div class="steps">
+            <div class="step"><b>1</b> התאימו את הפלאפון בהגדרות הבלוטוס של Windows</div>
+            <div class="step"><b>2</b> ודאו שהפלאפון חושף שירות <i>Serial/מודם</i> בבלוטוס</div>
+            <div class="step"><b>3</b> חזרו לכאן ולחצו "חיפוש מכשירים" → "חיבור"</div>
           </div>
         </div>
         <div class="card">
           <h3>יומן חיבור</h3>
-          <div class="sub">מצב מחסנית הבלוטוס בזמן אמת</div>
+          <div class="sub">תקשורת עם הפלאפון בזמן אמת (פקודות AT)</div>
           <div class="log-box" id="logBox"></div>
-          <p style="color:var(--muted-2); font-size:11.5px; margin-top:12px; line-height:1.6">
-            הערה: חיבור חי לחומרה דורש מחסנית בלוטוס נתמכת ב-Windows.
-            אם לא מותקנת — התוכנה פועלת במצב הדגמה מלא.
-          </p>
         </div>
       </div>`;
   },
@@ -270,7 +306,7 @@ const Views = {
         <h3>אודות</h3>
         <div class="sub">מידע על התוכנה</div>
         <div class="setting-row"><div class="s-main"><div class="t">גרסה</div></div><span style="color:var(--muted)">${esc(info.version)}</span></div>
-        <div class="setting-row"><div class="s-main"><div class="t">מצב עבודה</div></div><span style="color:var(--muted)">${State.status.mode === 'hardware' ? 'חומרה אמיתית' : 'הדגמה'}</span></div>
+        <div class="setting-row"><div class="s-main"><div class="t">מצב חיבור</div></div><span style="color:var(--muted)">${State.status.state === 'connected' ? 'מחובר לפלאפון' : 'לא מחובר'}</span></div>
         <div class="setting-row"><div class="s-main"><div class="t">תיקיית הקלטות</div></div><button class="btn ghost sm" id="openRec2">פתיחה</button></div>
       </div>`;
   }
@@ -391,30 +427,54 @@ const AfterRender = {
   },
 
   async babysitter() {
-    let running = false, timer = null;
-    const level = $('#babyLevel'), val = $('#babyVal'), wave = $('#babyWave');
+    const level = $('#babyLevel'), val = $('#babyVal');
     const bars = $$('#babyWave i');
     const thresholdInput = $('#babyThreshold');
-    const tick = () => {
-      const noise = Math.round(20 + Math.random() * 70);
+    let audioCtx = null, analyser = null, stream = null, raf = null, lastAlert = 0;
+
+    const loop = () => {
+      const buf = new Uint8Array(analyser.fftSize);
+      analyser.getByteTimeDomainData(buf);
+      let sum = 0;
+      for (const v of buf) { const x = (v - 128) / 128; sum += x * x; }
+      const rms = Math.sqrt(sum / buf.length);
+      const noise = Math.min(100, Math.round(rms * 320));
       val.textContent = noise;
+      const thr = +thresholdInput.value || 55;
       const deg = (noise / 100) * 360;
-      const color = noise > (thresholdInput.value || 55) ? 'var(--danger)' : 'var(--accent)';
+      const color = noise > thr ? 'var(--danger)' : 'var(--accent)';
       level.style.background = `conic-gradient(${color} ${deg}deg, rgba(255,255,255,.06) ${deg}deg)`;
-      bars.forEach((b) => b.style.height = (6 + Math.random() * 48) + 'px');
-      if (noise > (thresholdInput.value || 55)) {
+      bars.forEach((b) => b.style.height = (6 + Math.min(54, noise * (0.5 + Math.random() * 0.7))) + 'px');
+      if (noise > thr && Date.now() - lastAlert > 4000) {
+        lastAlert = Date.now();
         toast('🔔 זוהה רעש חריג בחדר!', 'red');
       }
+      raf = requestAnimationFrame(loop);
     };
-    $('#babyStart').addEventListener('click', () => {
-      running = true; $('#babyStart').hidden = true; $('#babyStop').hidden = false;
-      timer = setInterval(tick, 900); toast('ניטור בייביסיטר הופעל', 'green');
+
+    $('#babyStart').addEventListener('click', async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (e) { toast('אין גישה למיקרופון המחשב', 'red'); return; }
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const srcNode = audioCtx.createMediaStreamSource(stream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 1024;
+      srcNode.connect(analyser);
+      $('#babyStart').hidden = true; $('#babyStop').hidden = false;
+      toast('ניטור הופעל דרך מיקרופון המחשב', 'green');
+      loop();
     });
+
     $('#babyStop').addEventListener('click', () => {
-      running = false; $('#babyStart').hidden = false; $('#babyStop').hidden = true;
-      clearInterval(timer); val.textContent = '0';
+      if (raf) cancelAnimationFrame(raf);
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+      if (audioCtx) audioCtx.close().catch(() => {});
+      $('#babyStart').hidden = false; $('#babyStop').hidden = true;
+      val.textContent = '0';
       level.style.background = 'conic-gradient(var(--accent) 0deg, rgba(255,255,255,.06) 0deg)';
     });
+
     thresholdInput.addEventListener('change', () => api.store.set('settings.babysitterThreshold', +thresholdInput.value));
     $('#babyCallback').addEventListener('change', (e) => api.store.set('settings.babysitterCallback', e.target.checked));
   },
@@ -426,15 +486,13 @@ const AfterRender = {
       const list = await api.bt.scan();
       $('#scanSpin').hidden = true;
       renderDevices(list);
+      if (!list.length) toast('לא נמצא פורט בלוטוס. התאימו את הפלאפון והפעילו שירות Serial/מודם.', 'gold');
     });
-    $('#btnSimIncoming').addEventListener('click', async () => {
-      const r = await api.call.simulateIncoming();
-      if (r && r.reason === 'not_connected') toast('חברו קודם פלאפון כדי להדגים שיחה', 'red');
-    });
+    $('#btnBtSettings').addEventListener('click', () => api.bt.openSettings());
   },
 
   settings() {
-    $('#setAutoRec').addEventListener('change', (e) => { api.store.set('settings.autoRecord', e.target.checked); toast('נשמר', 'green'); });
+    $('#setAutoRec').addEventListener('change', (e) => { State.autoRecord = e.target.checked; api.store.set('settings.autoRecord', e.target.checked); toast('נשמר', 'green'); });
     $('#setDeviceName').addEventListener('change', (e) => api.store.set('settings.deviceName', e.target.value));
     $('#setRing').addEventListener('change', (e) => api.store.set('settings.ringtone', e.target.value));
     $('#openRec2').addEventListener('click', () => api.sys.openRecordingsFolder());
@@ -469,6 +527,7 @@ function renderCall(call) {
   State.call = call;
   const overlay = $('#callOverlay');
   if (!call) {
+    if (Recorder.active) Recorder.stop().then(() => toast('ההקלטה נשמרה', 'green'));
     overlay.hidden = true;
     if (State.callTimer) { clearInterval(State.callTimer); State.callTimer = null; }
     if (State.view) render(State.view);
@@ -501,12 +560,25 @@ function renderCall(call) {
       const started = call.connectedAt || Date.now();
       State.callTimer = setInterval(() => { timer.textContent = fmtDuration((Date.now() - started) / 1000); }, 500);
     }
+    if (State.autoRecord && !Recorder.active) {
+      Recorder.start('שיחה_' + (call.number || '')).then(() => { $('#btnRec').classList.add('active'); }).catch(() => {});
+    }
   }
 
   $('#btnMute').onclick = async () => { const r = await api.call.toggleMute(); $('#btnMute').classList.toggle('active', r.muted); };
+  $('#btnRec').classList.toggle('active', Recorder.active);
   $('#btnRec').onclick = async () => {
-    if (State.status.recording) { await api.rec.stop(); $('#btnRec').classList.remove('active'); toast('הקלטה נעצרה'); }
-    else { await api.rec.start(); $('#btnRec').classList.add('active'); toast('הקלטה החלה', 'red'); }
+    if (Recorder.active) {
+      await Recorder.stop();
+      $('#btnRec').classList.remove('active');
+      toast('ההקלטה נשמרה', 'green');
+    } else {
+      try {
+        await Recorder.start('שיחה_' + ((State.call && State.call.number) || ''));
+        $('#btnRec').classList.add('active');
+        toast('מקליט (מיקרופון המחשב)', 'red');
+      } catch (e) { toast('אין גישה למיקרופון', 'red'); }
+    }
   };
 }
 
@@ -548,8 +620,13 @@ function applyStatus(s) {
   sub.textContent = connected ? 'הפלאפון מחובר ✓' : 'לחצו כדי לחבר פלאפון';
 
   const modePill = $('#modePill');
-  modePill.textContent = s.mode === 'hardware' ? 'חיבור חומרה' : 'מצב הדגמה';
-  modePill.classList.toggle('hw', s.mode === 'hardware');
+  if (connected) {
+    modePill.textContent = 'מחובר' + (s.device && s.device.port ? ` · ${s.device.port}` : '');
+    modePill.classList.add('hw');
+  } else {
+    modePill.textContent = s.supported === false ? 'בלוטוס נתמך ב-Windows' : 'לא מחובר';
+    modePill.classList.remove('hw');
+  }
 
   const bp = $('#batteryPill');
   if (s.battery != null) { bp.hidden = false; $('#batteryVal').textContent = s.battery; } else bp.hidden = true;
@@ -593,6 +670,7 @@ function boot() {
   api.on('bt:log', (line) => { logLines.push(line); if (logLines.length > 100) logLines.shift(); refreshLog(); });
 
   api.bt.getStatus().then((s) => applyStatus(s));
+  api.store.get('settings.autoRecord', false).then((v) => { State.autoRecord = v; });
   updateVmBadge();
   switchView('dashboard');
 }

@@ -10,7 +10,8 @@ contextBridge.exposeInMainWorld('api', {
     scan: () => ipcRenderer.invoke('bt:scan'),
     connect: (id) => ipcRenderer.invoke('bt:connect', id),
     disconnect: () => ipcRenderer.invoke('bt:disconnect'),
-    getStatus: () => ipcRenderer.invoke('bt:getStatus')
+    getStatus: () => ipcRenderer.invoke('bt:getStatus'),
+    openSettings: () => ipcRenderer.invoke('bt:openSettings')
   },
   // שיחות
   call: {
@@ -18,13 +19,11 @@ contextBridge.exposeInMainWorld('api', {
     answer: () => ipcRenderer.invoke('call:answer'),
     hangup: () => ipcRenderer.invoke('call:hangup'),
     sendDtmf: (d) => ipcRenderer.invoke('call:sendDtmf', d),
-    toggleMute: () => ipcRenderer.invoke('call:toggleMute'),
-    simulateIncoming: () => ipcRenderer.invoke('call:simulateIncoming')
+    toggleMute: () => ipcRenderer.invoke('call:toggleMute')
   },
   // הקלטות
   rec: {
-    start: () => ipcRenderer.invoke('rec:start'),
-    stop: () => ipcRenderer.invoke('rec:stop'),
+    save: (payload) => ipcRenderer.invoke('rec:save', payload),
     list: () => ipcRenderer.invoke('rec:list'),
     open: (p) => ipcRenderer.invoke('rec:open', p),
     delete: (p) => ipcRenderer.invoke('rec:delete', p)
