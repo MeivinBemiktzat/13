@@ -34,6 +34,9 @@
 
 * { box-sizing: border-box; }
 
+/* קריטי: תכונת hidden חייבת לנצח כל כלל display אחר */
+[hidden] { display: none !important; }
+
 html, body {
   height: 100%;
   margin: 0;

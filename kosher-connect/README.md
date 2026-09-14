@@ -14,7 +14,7 @@
 הורידו את קובץ ההתקנה מתיקיית [`installer/`](installer/):
 
 ```
-installer/KosherConnect-Setup-1.0.0.exe
+installer/KosherConnect-Setup-1.0.1.exe
 ```
 
 הריצו אותו — ההתקנה רגילה לחלוטין:

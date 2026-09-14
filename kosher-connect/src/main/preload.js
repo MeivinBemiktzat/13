@@ -18,7 +18,8 @@ contextBridge.exposeInMainWorld('api', {
     answer: () => ipcRenderer.invoke('call:answer'),
     hangup: () => ipcRenderer.invoke('call:hangup'),
     sendDtmf: (d) => ipcRenderer.invoke('call:sendDtmf', d),
-    toggleMute: () => ipcRenderer.invoke('call:toggleMute')
+    toggleMute: () => ipcRenderer.invoke('call:toggleMute'),
+    simulateIncoming: () => ipcRenderer.invoke('call:simulateIncoming')
   },
   // הקלטות
   rec: {

@@ -141,9 +141,6 @@ class BluetoothService extends EventEmitter {
     this._pushStatus();
     this.emit('battery', this.status.battery);
     this._log(`מחובר לפלאפון: ${dev.name}`);
-
-    // במצב הדגמה — מדמים שיחה נכנסת אחרי זמן מה כדי להראות את הזרימה
-    if (this.mode === 'simulation') this._scheduleDemoIncoming();
     return this.getStatus();
   }
 
@@ -267,23 +264,24 @@ class BluetoothService extends EventEmitter {
     if (auto && !this.status.recording) this.startRecording();
   }
 
-  // ================= בייביסיטר / תא קולי =================
-  _scheduleDemoIncoming() {
-    // הדגמה: שיחה נכנסת אחרי 6 שניות
-    this._simTimer(() => {
-      if (this.status.state !== 'connected' || this.currentCall) return;
-      const number = '050-123-4567';
-      this.currentCall = {
-        number,
-        name: this._lookupName(number) || 'מספר לא מזוהה',
-        direction: 'incoming',
-        state: 'ringing',
-        startedAt: Date.now()
-      };
-      this.emit('incoming', { ...this.currentCall });
-      this.emit('call', { ...this.currentCall });
-      this._log(`שיחה נכנסת מ-${this.currentCall.name}`);
-    }, 6000);
+  // ================= הדמיית שיחה נכנסת (יזומה ע"י המשתמש) =================
+  simulateIncoming(number = '050-123-4567') {
+    if (this.status.state !== 'connected') {
+      this._log('אין חיבור — לא ניתן להדגים שיחה נכנסת.');
+      return { ok: false, reason: 'not_connected' };
+    }
+    if (this.currentCall) return { ok: false, reason: 'busy' };
+    this.currentCall = {
+      number,
+      name: this._lookupName(number) || 'מספר לא מזוהה',
+      direction: 'incoming',
+      state: 'ringing',
+      startedAt: Date.now()
+    };
+    this.emit('incoming', { ...this.currentCall });
+    this.emit('call', { ...this.currentCall });
+    this._log(`שיחה נכנסת מ-${this.currentCall.name}`);
+    return { ok: true };
   }
 
   // ================= עזרי אחסון =================

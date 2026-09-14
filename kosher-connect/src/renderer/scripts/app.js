@@ -222,6 +222,7 @@ const Views = {
           <div class="sub">המחשב מתחזה לדיבורית בלוטוס — חברו כל טלפון, גם כשר</div>
           <div class="device-scan">
             <button class="btn" id="btnScan">🔍 חיפוש מכשירים</button>
+            <button class="btn ghost sm" id="btnSimIncoming">📲 הדמיית שיחה נכנסת</button>
             <div class="spinner" id="scanSpin" hidden></div>
           </div>
           <div class="list" id="deviceList">
@@ -424,6 +425,10 @@ const AfterRender = {
       const list = await api.bt.scan();
       $('#scanSpin').hidden = true;
       renderDevices(list);
+    });
+    $('#btnSimIncoming').addEventListener('click', async () => {
+      const r = await api.call.simulateIncoming();
+      if (r && r.reason === 'not_connected') toast('חברו קודם פלאפון כדי להדגים שיחה', 'red');
     });
   },
 

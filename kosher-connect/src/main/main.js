@@ -104,6 +104,7 @@ function registerIpc() {
   ipcMain.handle('call:hangup', async () => bluetooth.hangup());
   ipcMain.handle('call:sendDtmf', async (_e, digit) => bluetooth.sendDtmf(digit));
   ipcMain.handle('call:toggleMute', async () => bluetooth.toggleMute());
+  ipcMain.handle('call:simulateIncoming', async () => bluetooth.simulateIncoming());
 
   // --- הקלטות ---
   ipcMain.handle('rec:start', async () => bluetooth.startRecording());
