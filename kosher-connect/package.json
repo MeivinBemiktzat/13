@@ -1,0 +1,60 @@
+{
+  "name": "kosher-connect",
+  "productName": "KosherConnect",
+  "version": "1.0.0",
+  "description": "KosherConnect - חיבור מחשב לפלאפון כשר דרך בלוטוס (דיבורית חכמה)",
+  "author": {
+    "name": "KosherConnect",
+    "email": "support@kosherconnect.local"
+  },
+  "license": "MIT",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "dist": "electron-builder --win --x64",
+    "pack": "electron-builder --dir"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {},
+  "build": {
+    "appId": "com.kosherconnect.app",
+    "productName": "KosherConnect",
+    "copyright": "Copyright © 2026 KosherConnect",
+    "asar": true,
+    "publish": null,
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "KosherConnect-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "differentialPackage": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "KosherConnect",
+      "installerLanguages": ["he_IL", "en_US"],
+      "language": "1037",
+      "runAfterFinish": true
+    }
+  }
+}

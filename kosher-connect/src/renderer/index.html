@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; font-src 'self'" />
+  <title>KosherConnect</title>
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- ===== סרגל צד ===== -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <strong>KosherConnect</strong>
+          <span>דיבורית חכמה</span>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <button class="nav-item active" data-view="dashboard"><span class="ni-icon">🏠</span> בית</button>
+        <button class="nav-item" data-view="dialer"><span class="ni-icon">📞</span> חייגן</button>
+        <button class="nav-item" data-view="contacts"><span class="ni-icon">👥</span> אנשי קשר</button>
+        <button class="nav-item" data-view="calllog"><span class="ni-icon">🕓</span> יומן שיחות</button>
+        <button class="nav-item" data-view="voicemail"><span class="ni-icon">📬</span> תא קולי <em class="badge" id="vmBadge" hidden>0</em></button>
+        <button class="nav-item" data-view="recordings"><span class="ni-icon">🎙️</span> הקלטות</button>
+        <button class="nav-item" data-view="babysitter"><span class="ni-icon">🍼</span> בייביסיטר</button>
+        <button class="nav-item" data-view="devices"><span class="ni-icon">📶</span> חיבור בלוטוס</button>
+        <button class="nav-item" data-view="settings"><span class="ni-icon">⚙️</span> הגדרות</button>
+      </nav>
+
+      <div class="conn-card" id="connCard">
+        <div class="conn-dot" id="connDot"></div>
+        <div class="conn-info">
+          <strong id="connTitle">לא מחובר</strong>
+          <span id="connSub">לחצו כדי לחבר פלאפון</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== אזור תוכן ===== -->
+    <main class="content">
+      <header class="topbar">
+        <div class="topbar-title" id="viewTitle">בית</div>
+        <div class="topbar-actions">
+          <div class="pill" id="batteryPill" hidden><span id="batteryVal">–</span>% 🔋</div>
+          <div class="pill mode-pill" id="modePill">מצב הדגמה</div>
+        </div>
+      </header>
+
+      <section class="view-host" id="viewHost"><!-- תצוגות מוזרקות כאן --></section>
+    </main>
+  </div>
+
+  <!-- ===== מסך שיחה צף ===== -->
+  <div class="call-overlay" id="callOverlay" hidden>
+    <div class="call-card">
+      <div class="call-avatar" id="callAvatar">👤</div>
+      <div class="call-name" id="callName">—</div>
+      <div class="call-number" id="callNumber">—</div>
+      <div class="call-state" id="callState">מחייג...</div>
+      <div class="call-timer" id="callTimer" hidden>00:00</div>
+
+      <div class="call-actions" id="callActions"></div>
+
+      <div class="call-extra">
+        <button class="round-btn" id="btnMute" title="השתקה">🔇</button>
+        <button class="round-btn" id="btnRec" title="הקלטה">🔴</button>
+        <button class="round-btn" id="btnKeypad" title="מקשים">⌨️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== התראה קופצת (טוסט) ===== -->
+  <div class="toast-host" id="toastHost"></div>
+
+  <script src="scripts/app.js"></script>
+</body>
+</html>
