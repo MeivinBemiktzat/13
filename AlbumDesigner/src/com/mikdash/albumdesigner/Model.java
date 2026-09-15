@@ -20,6 +20,7 @@ public final class Model {
     public static final int KIND_TEXT = 1;
     public static final int KIND_SHAPE = 2;
     public static final int KIND_STICKER = 3;
+    public static final int KIND_CLIP = 4;    // vector clipart / illustration
 
     public static final int SHAPE_RECT = 0;
     public static final int SHAPE_ROUND = 1;
@@ -47,6 +48,7 @@ public final class Model {
         public float borderW = 0f;
         public int borderColor = 0xFFFFFFFF;
         public int filter = 0;        // photo filter, see Renderer.FILTER_*
+        public int frameStyle = 0;    // decorative frame around photo, see Frames
 
         // text
         public String text = "";
@@ -68,6 +70,10 @@ public final class Model {
         // sticker
         public String emoji = "★";
 
+        // clipart
+        public int clipId = 0;
+        public int clipColor2 = 0xFFFFFFFF; // secondary/accent colour for clipart
+
         public El copy() {
             El e = new El();
             e.kind = kind; e.x = x + 24; e.y = y + 24; e.w = w; e.h = h;
@@ -78,7 +84,7 @@ public final class Model {
             e.bold = bold; e.italic = italic; e.underline = underline; e.align = align;
             e.shadow = shadow; e.bgBox = bgBox; e.letterSpacing = letterSpacing;
             e.shapeType = shapeType; e.fillColor = fillColor; e.strokeColor = strokeColor; e.strokeW = strokeW;
-            e.emoji = emoji;
+            e.emoji = emoji; e.frameStyle = frameStyle; e.clipId = clipId; e.clipColor2 = clipColor2;
             return e;
         }
 
@@ -93,7 +99,7 @@ public final class Model {
             o.put("b", bold); o.put("i", italic); o.put("u", underline); o.put("al", align);
             o.put("sh", shadow); o.put("bx", bgBox); o.put("ls", letterSpacing);
             o.put("st", shapeType); o.put("fc", fillColor); o.put("sc", strokeColor); o.put("sw", strokeW);
-            o.put("em", emoji);
+            o.put("em", emoji); o.put("frm", frameStyle); o.put("cid", clipId); o.put("cc2", clipColor2);
             return o;
         }
 
@@ -115,6 +121,7 @@ public final class Model {
             e.shapeType = o.optInt("st", 0); e.fillColor = o.optInt("fc", 0xFFEC407A);
             e.strokeColor = o.optInt("sc", 0); e.strokeW = (float) o.optDouble("sw", 0);
             e.emoji = o.optString("em", "★");
+            e.frameStyle = o.optInt("frm", 0); e.clipId = o.optInt("cid", 0); e.clipColor2 = o.optInt("cc2", 0xFFFFFFFF);
             return e;
         }
     }
@@ -124,19 +131,23 @@ public final class Model {
     public static final int BG_SOLID = 0;
     public static final int BG_GRADIENT = 1;
     public static final int BG_PHOTO = 2;
+    public static final int BG_PATTERN = 3;
+    public static final int BG_RADIAL = 4;
 
     public static final class Page {
         public int bgType = BG_SOLID;
         public int bgColor = 0xFFFFFFFF;
-        public int bgColor2 = 0xFFEDE7F6; // gradient end
+        public int bgColor2 = 0xFFEDE7F6; // gradient end / pattern accent
         public int gradientAngle = 45;
+        public int patternId = 0;         // for BG_PATTERN
+        public int overlay = 0;           // 0 none, 1 vignette, 2 soft top-light
         public String bgUri;              // for BG_PHOTO
         public final List<El> els = new ArrayList<>();
 
         JSONObject toJson() throws JSONException {
             JSONObject o = new JSONObject();
             o.put("bt", bgType); o.put("bc", bgColor); o.put("bc2", bgColor2);
-            o.put("ga", gradientAngle);
+            o.put("ga", gradientAngle); o.put("pid", patternId); o.put("ov", overlay);
             if (bgUri != null) o.put("buri", bgUri);
             JSONArray arr = new JSONArray();
             for (El e : els) arr.put(e.toJson());
@@ -152,6 +163,7 @@ public final class Model {
             Page p = new Page();
             p.bgType = o.optInt("bt"); p.bgColor = o.optInt("bc", 0xFFFFFFFF);
             p.bgColor2 = o.optInt("bc2", 0xFFEDE7F6); p.gradientAngle = o.optInt("ga", 45);
+            p.patternId = o.optInt("pid", 0); p.overlay = o.optInt("ov", 0);
             p.bgUri = o.has("buri") ? o.optString("buri") : null;
             JSONArray arr = o.optJSONArray("els");
             if (arr != null) for (int i = 0; i < arr.length(); i++)

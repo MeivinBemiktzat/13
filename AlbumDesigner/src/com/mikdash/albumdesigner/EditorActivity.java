@@ -7,6 +7,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -148,7 +151,8 @@ public class EditorActivity extends Activity implements EditorView.Listener {
 
         row.addView(tool("🖼", "תמונה", new Runnable() { public void run() { addPhoto(); } }));
         row.addView(tool("🅰", "טקסט", new Runnable() { public void run() { addText(); } }));
-        row.addView(tool("⭐", "מדבקה", new Runnable() { public void run() { stickerDialog(); } }));
+        row.addView(tool("🌸", "איורים", new Runnable() { public void run() { clipartDialog(); } }));
+        row.addView(tool("⭐", "אמוג'י", new Runnable() { public void run() { stickerDialog(); } }));
         row.addView(tool("◼", "צורה", new Runnable() { public void run() { shapeDialog(); } }));
         row.addView(tool("🎨", "רקע", new Runnable() { public void run() { backgroundDialog(); } }));
         row.addView(tool("✨", "תבניות", new Runnable() { public void run() { themeDialog(); } }));
@@ -351,6 +355,105 @@ public class EditorActivity extends Activity implements EditorView.Listener {
                 }).show();
     }
 
+    /* --------------------------- clipart ------------------------------- */
+
+    // A small canvas-drawn preview tile for clipart / patterns / frames.
+    private class Tile extends View {
+        int mode; // 0 clip, 1 pattern, 2 frame
+        int idx; int c1, c2;
+        final Paint pt = new Paint(Paint.ANTI_ALIAS_FLAG);
+        Tile(Context ctx, int mode, int idx, int c1, int c2) {
+            super(ctx); this.mode = mode; this.idx = idx; this.c1 = c1; this.c2 = c2;
+        }
+        protected void onDraw(Canvas cv) {
+            int w = getWidth(), h = getHeight();
+            float pad = w * 0.12f;
+            if (mode == 0) {
+                Clipart.draw(cv, idx, pad, pad, w - 2 * pad, h - 2 * pad, pt, c1, c2);
+            } else if (mode == 1) {
+                pt.setColor(0xFFFFFFFF); pt.setStyle(Paint.Style.FILL);
+                cv.drawRect(0, 0, w, h, pt);
+                cv.save(); cv.clipRect(0, 0, w, h);
+                Patterns.draw(cv, idx, w, h, c1); cv.restore();
+            } else {
+                pt.setColor(0xFFBBDEFB); pt.setStyle(Paint.Style.FILL);
+                float mi = Frames.matInset(idx) * Math.min(w, h) + w * 0.16f;
+                RectF r = new RectF(mi, mi, w - mi, h - mi);
+                cv.drawRect(r, pt);
+                Frames.draw(cv, idx, r, w * 0.04f, c1, pt);
+            }
+        }
+    }
+
+    private View tile(int mode, int idx, int c1, int c2, int sizeDp, View.OnClickListener l) {
+        Tile t = new Tile(this, mode, idx, c1, c2);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Ui.dp(this, sizeDp), Ui.dp(this, sizeDp));
+        lp.setMargins(Ui.dp(this, 4), Ui.dp(this, 4), Ui.dp(this, 4), Ui.dp(this, 4));
+        t.setLayoutParams(lp);
+        t.setBackground(Ui.roundBg(0xFFFAF6FF, 10, this));
+        t.setOnClickListener(l);
+        return t;
+    }
+
+    private int clipC1 = 0xFFEC407A, clipC2 = 0xFFFFFFFF;
+
+    private void clipartDialog() {
+        LinearLayout box = vbox();
+        // colour chooser for new clipart
+        addSectionTitle(box, "צבע ראשי");
+        box.addView(swatchRow(Palette.COLORS, new IntConsumer() { public void accept(int c) { clipC1 = c; } }));
+        addSectionTitle(box, "צבע משני");
+        box.addView(swatchRow(Palette.COLORS, new IntConsumer() { public void accept(int c) { clipC2 = c; } }));
+        for (Object[] cat : Clipart.CATEGORIES) {
+            addSectionTitle(box, (String) cat[0]);
+            int from = (Integer) cat[1], to = (Integer) cat[2];
+            HorizontalScrollView hs = new HorizontalScrollView(this);
+            LinearLayout rowl = new LinearLayout(this);
+            for (int i = from; i < to; i++) {
+                final int id = i;
+                rowl.addView(tile(0, i, clipC1, clipC2, 62, new View.OnClickListener() {
+                    public void onClick(View v) { addClip(id); dismissTop(); }
+                }));
+            }
+            hs.addView(rowl);
+            box.addView(hs);
+        }
+        showSheet("איורים וקטוריים", box);
+    }
+
+    private void addClip(int id) {
+        pushUndo();
+        Model.El e = new Model.El();
+        e.kind = Model.KIND_CLIP; e.clipId = id;
+        e.fillColor = clipC1; e.clipColor2 = clipC2;
+        int pw = project.pw();
+        e.w = pw * 0.28f; e.h = pw * 0.28f; e.x = (pw - e.w) / 2; e.y = project.ph() * 0.4f;
+        editor.addElement(e);
+    }
+
+    private void editClip(final Model.El e) {
+        pushUndo();
+        LinearLayout box = vbox();
+        addSectionTitle(box, "החלף איור");
+        for (Object[] cat : Clipart.CATEGORIES) {
+            int from = (Integer) cat[1], to = (Integer) cat[2];
+            HorizontalScrollView hs = new HorizontalScrollView(this);
+            LinearLayout rowl = new LinearLayout(this);
+            for (int i = from; i < to; i++) {
+                final int id = i;
+                rowl.addView(tile(0, i, e.fillColor, e.clipColor2, 54, new View.OnClickListener() {
+                    public void onClick(View v) { e.clipId = id; editor.edited(); }
+                }));
+            }
+            hs.addView(rowl); box.addView(hs);
+        }
+        addSectionTitle(box, "צבע ראשי");
+        box.addView(swatchRow(Palette.COLORS, new IntConsumer() { public void accept(int c) { e.fillColor = c; editor.edited(); } }));
+        addSectionTitle(box, "צבע משני");
+        box.addView(swatchRow(Palette.COLORS, new IntConsumer() { public void accept(int c) { e.clipColor2 = c; editor.edited(); } }));
+        showSheet("עריכת איור", box);
+    }
+
     /* ------------------------ background / theme ----------------------- */
 
     private void backgroundDialog() {
@@ -381,6 +484,53 @@ public class EditorActivity extends Activity implements EditorView.Listener {
         }
         ghs.addView(gr);
         box.addView(ghs);
+        addSectionTitle(box, "דפוסים");
+        HorizontalScrollView phs = new HorizontalScrollView(this);
+        LinearLayout prow = new LinearLayout(this);
+        for (int i = 0; i < Patterns.NAMES.length; i++) {
+            final int pi = i;
+            prow.addView(tile(1, i, 0xFFB39DDB, 0, 54, new View.OnClickListener() {
+                public void onClick(View v) {
+                    pushUndo(); pg.bgType = Model.BG_PATTERN; pg.patternId = pi;
+                    if (pg.bgColor == 0xFF000000) pg.bgColor = 0xFFFFFFFF;
+                    editor.edited();
+                }
+            }));
+        }
+        phs.addView(prow); box.addView(phs);
+        addSectionTitle(box, "צבע הדפוס");
+        box.addView(swatchRow(Palette.COLORS, new IntConsumer() {
+            public void accept(int c) { if (pg.bgType == Model.BG_PATTERN) { pushUndo(); pg.bgColor2 = c; editor.edited(); } }
+        }));
+        addSectionTitle(box, "רקע מעגלי (זוהר)");
+        LinearLayout radial = new LinearLayout(this);
+        for (int i = 0; i < Palette.GRADIENTS.length; i += 2) {
+            final int[] gg = Palette.GRADIENTS[i];
+            View v = new View(this);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Ui.dp(this, 46), Ui.dp(this, 46));
+            lp.setMargins(Ui.dp(this, 4), 0, Ui.dp(this, 4), 0); v.setLayoutParams(lp);
+            android.graphics.drawable.GradientDrawable d = new android.graphics.drawable.GradientDrawable();
+            d.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+            d.setGradientType(android.graphics.drawable.GradientDrawable.RADIAL_GRADIENT);
+            d.setColors(new int[]{gg[1], gg[0]}); d.setGradientRadius(Ui.dp(this, 30)); d.setCornerRadius(Ui.dp(this, 8));
+            v.setBackground(d);
+            v.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View x) { pushUndo(); pg.bgType = Model.BG_RADIAL; pg.bgColor = gg[1]; pg.bgColor2 = gg[0]; editor.edited(); }
+            });
+            radial.addView(v);
+        }
+        HorizontalScrollView rhs = new HorizontalScrollView(this); rhs.addView(radial); box.addView(rhs);
+        addSectionTitle(box, "אפקט תאורה");
+        LinearLayout ov = new LinearLayout(this);
+        ov.addView(Ui.pillButton(this, "ללא", 0xFFE1BEE7, 0xFF4A148C, new View.OnClickListener() {
+            public void onClick(View v) { pushUndo(); pg.overlay = 0; editor.edited(); } }));
+        ov.addView(sp());
+        ov.addView(Ui.pillButton(this, "וינייטה", 0xFFE1BEE7, 0xFF4A148C, new View.OnClickListener() {
+            public void onClick(View v) { pushUndo(); pg.overlay = 1; editor.edited(); } }));
+        ov.addView(sp());
+        ov.addView(Ui.pillButton(this, "זוהר עליון", 0xFFE1BEE7, 0xFF4A148C, new View.OnClickListener() {
+            public void onClick(View v) { pushUndo(); pg.overlay = 2; editor.edited(); } }));
+        box.addView(ov);
         addSectionTitle(box, "רקע מתמונה");
         box.addView(Ui.pillButton(this, "בחר תמונת רקע", 0xFF7B1FA2, 0xFFFFFFFF, new View.OnClickListener() {
             public void onClick(View v) { pushUndo(); launchPicker(REQ_BG); dismissTop(); }
@@ -429,6 +579,7 @@ public class EditorActivity extends Activity implements EditorView.Listener {
             case Model.KIND_PHOTO: editPhoto(e); break;
             case Model.KIND_SHAPE: editShape(e); break;
             case Model.KIND_STICKER: editSticker(e); break;
+            case Model.KIND_CLIP: editClip(e); break;
         }
     }
 
@@ -510,6 +661,27 @@ public class EditorActivity extends Activity implements EditorView.Listener {
         }
         HorizontalScrollView fhs = new HorizontalScrollView(this); fhs.addView(filters);
         box.addView(fhs);
+        addSectionTitle(box, "מסגרת דקורטיבית");
+        HorizontalScrollView frs = new HorizontalScrollView(this);
+        LinearLayout frames = new LinearLayout(this);
+        for (int i = 0; i < Frames.NAMES.length; i++) {
+            final int fi = i;
+            int fc = e.borderColor == 0xFFFFFFFF ? 0xFF555555 : e.borderColor;
+            LinearLayout cell = new LinearLayout(this); cell.setOrientation(LinearLayout.VERTICAL);
+            cell.setGravity(Gravity.CENTER);
+            cell.addView(tile(2, i, fc, 0, 58, new View.OnClickListener() {
+                public void onClick(View v) {
+                    e.frameStyle = fi;
+                    if (e.borderColor == 0xFFFFFFFF && fi != 6 && fi != 7 && fi != 11) e.borderColor = 0xFF555555;
+                    editor.edited();
+                }
+            }));
+            TextView lbl = new TextView(this); lbl.setText(Frames.NAMES[i]); lbl.setTextSize(10);
+            lbl.setGravity(Gravity.CENTER); lbl.setTextColor(0xFF666666);
+            cell.addView(lbl);
+            frames.addView(cell);
+        }
+        frs.addView(frames); box.addView(frs);
         addSectionTitle(box, "עיגול פינות");
         box.addView(slider(0, (int) (Math.min(e.w, e.h) / 2), (int) e.corner, new IntConsumer() {
             public void accept(int v) { e.corner = v; editor.edited(); }

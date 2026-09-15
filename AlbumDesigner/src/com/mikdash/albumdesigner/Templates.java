@@ -94,6 +94,8 @@ public final class Templates {
             "רומנטי ❤", "חתונה 💍", "תינוק 👶", "יום הולדת 🎂", "טיולים ✈",
             "מינימלי", "וינטג'", "חגיגי ✨", "טבע 🌿", "ים וקיץ 🌊",
             "פסטל", "שחור זהב", "משפחה", "פרחוני 🌸",
+            "זר פרחים", "באנר מסיבה", "פספורט הרפתקאות", "שמי כוכבים",
+            "בוהו טבעי", "מלכותי", "חורף קסום", "אלבום קלאסי",
     };
 
     public static Model.Page theme(int idx, int pw, int ph) {
@@ -205,11 +207,87 @@ public final class Templates {
                 photo(pg, pw * 0.16f, ph * 0.18f, pw * 0.68f, ph * 0.56f, pw * 0.5f);
                 title(pg, "פריחה", pw, ph * 0.8f, 0xFFAD1457, 6, true);
                 break;
+            case 14: // floral wreath
+                pg.bgType = Model.BG_PATTERN; pg.bgColor = 0xFFFFF8F3; pg.bgColor2 = 0xFFF3D9D2; pg.patternId = 4;
+                clip(pg, 35, pw * 0.20f, ph * 0.10f, pw * 0.6f, 0xFFEC7CA5, 0xFFF6B26B);
+                photo(pg, pw * 0.30f, ph * 0.30f, pw * 0.4f, ph * 0.28f, pw * 0.5f);
+                title(pg, "רגעים של אושר", pw, ph * 0.72f, 0xFFAD1457, 5, false);
+                clip(pg, 37, pw * 0.30f, ph * 0.86f, pw * 0.4f, 0xFFAD1457, 0xFFAD1457);
+                break;
+            case 15: // party banner
+                grad(pg, 0xFF6A11CB, 0xFF2575FC, 60);
+                clip(pg, 33, pw * 0.08f, ph * 0.04f, pw * 0.84f, 0xFFFFD54F, 0xFFEC407A);
+                photo(pg, m, ph * 0.22f, pw - 2 * m, ph * 0.5f, pw * 0.04f);
+                clip(pg, 27, 0, ph * 0.7f, pw, 0xFFFFD54F, 0xFFEC407A);
+                title(pg, "חוגגים!", pw, ph * 0.78f, 0xFFFFFFFF, 2, true);
+                clip(pg, 24, pw * 0.05f, ph * 0.08f, pw * 0.14f, 0xFFEF5350, 0xFFFFFFFF);
+                clip(pg, 24, pw * 0.80f, ph * 0.10f, pw * 0.14f, 0xFF42A5F5, 0xFFFFFFFF);
+                break;
+            case 16: // adventure passport
+                grad(pg, 0xFFFDFCFB, 0xFFE2D1C3, 90);
+                clip(pg, 41, pw * 0.60f, ph * 0.05f, pw * 0.34f, 0xFF5D4037, 0xFFEF5350);
+                clip(pg, 43, pw * 0.06f, ph * 0.06f, pw * 0.18f, 0xFF00695C, 0xFFEF5350);
+                title(pg, "ADVENTURE", pw, ph * 0.16f, 0xFF3E2723, 1, true);
+                photo(pg, m, ph * 0.26f, (pw - 2 * m) * 0.55f, ph * 0.4f, pw * 0.02f);
+                photo(pg, m + (pw - 2 * m) * 0.6f, ph * 0.26f, (pw - 2 * m) * 0.4f, ph * 0.4f, pw * 0.02f);
+                clip(pg, 14, pw * 0.1f, ph * 0.72f, pw * 0.8f, 0xFF8D6E63, 0xFFFFFFFF);
+                clip(pg, 42, pw * 0.44f, ph * 0.68f, pw * 0.12f, 0xFFE53935, 0xFFFFFFFF);
+                break;
+            case 17: // starry sky
+                grad(pg, 0xFF0F2027, 0xFF2C5364, 90); pg.overlay = 1;
+                for (int i = 0; i < 10; i++) clip(pg, 22,
+                        pw * (float) Math.random() * 0.92f, ph * (float) Math.random() * 0.5f, pw * 0.06f, 0xFFFFF59D, 0xFFFFFFFF);
+                clip(pg, 16, pw * 0.72f, ph * 0.06f, pw * 0.2f, 0xFFFFF176, 0xFFFFF176);
+                photo(pg, m, ph * 0.34f, pw - 2 * m, ph * 0.44f, pw * 0.05f);
+                title(pg, "תחת הכוכבים", pw, ph * 0.82f, 0xFFFFF59D, 5, true);
+                break;
+            case 18: // boho natural
+                solid(pg, 0xFFF3EEE7);
+                clip(pg, 5, pw * 0.02f, ph * 0.10f, pw * 0.2f, 0xFF8D9B6A, 0xFF8D9B6A);
+                clip(pg, 5, pw * 0.78f, ph * 0.60f, pw * 0.2f, 0xFFB08968, 0xFFB08968);
+                photo(pg, pw * 0.16f, ph * 0.14f, pw * 0.68f, ph * 0.54f, pw * 0.02f);
+                title(pg, "טבעי ורגוע", pw, ph * 0.74f, 0xFF7A6C53, 3, false);
+                clip(pg, 36, pw * 0.36f, ph * 0.84f, pw * 0.28f, 0xFFB08968, 0xFFB08968);
+                break;
+            case 19: // royal
+                solid(pg, 0xFF10131A); pg.overlay = 1;
+                clip(pg, 28, pw * 0.40f, ph * 0.04f, pw * 0.2f, 0xFFD4AF37, 0xFFFFF176);
+                photo(pg, pw * 0.14f, ph * 0.20f, pw * 0.72f, ph * 0.56f, pw * 0.02f);
+                shape(pg, Model.SHAPE_LINE, pw * 0.2f, ph * 0.80f, pw * 0.6f, 4, 0xFFD4AF37);
+                title(pg, "ROYAL", pw, ph * 0.84f, 0xFFD4AF37, 3, true);
+                clip(pg, 34, pw * 0.30f, ph * 0.16f, pw * 0.4f, 0xFFD4AF37, 0xFFD4AF37);
+                break;
+            case 20: // winter
+                grad(pg, 0xFFE3F2FD, 0xFFBBDEFB, 90);
+                for (int i = 0; i < 6; i++) clip(pg, 19,
+                        pw * (0.05f + i * 0.16f), ph * (0.04f + (i % 2) * 0.06f), pw * 0.12f, 0xFF90CAF9, 0xFF90CAF9);
+                photo(pg, m, ph * 0.2f, pw - 2 * m, ph * 0.52f, pw * 0.06f);
+                title(pg, "חורף קסום", pw, ph * 0.78f, 0xFF1565C0, 6, true);
+                clip(pg, 19, pw * 0.06f, ph * 0.82f, pw * 0.16f, 0xFF64B5F6, 0xFF64B5F6);
+                break;
+            case 21: // classic album
+                solid(pg, 0xFFFBF9F4);
+                shape(pg, Model.SHAPE_ROUND, m * 0.7f, m * 0.7f, pw - 1.4f * m, ph - 1.4f * m, 0x00000000);
+                pg.els.get(pg.els.size() - 1).fillColor = 0x00000000;
+                pg.els.get(pg.els.size() - 1).strokeColor = 0xFFB59F6B;
+                pg.els.get(pg.els.size() - 1).strokeW = 4;
+                clip(pg, 36, m, m, pw * 0.16f, 0xFFB59F6B, 0xFFB59F6B);
+                title(pg, "זכרונות יקרים", pw, ph * 0.1f, 0xFF6B5B3E, 3, false);
+                photo(pg, pw * 0.14f, ph * 0.22f, pw * 0.72f, ph * 0.58f, pw * 0.01f);
+                clip(pg, 37, pw * 0.3f, ph * 0.86f, pw * 0.4f, 0xFFB59F6B, 0xFFB59F6B);
+                break;
             default:
                 solid(pg, 0xFFFFFFFF);
                 photo(pg, m, m, pw - 2 * m, ph - 2 * m, pw * 0.03f);
         }
         return pg;
+    }
+
+    private static void clip(Model.Page pg, int id, float x, float y, float size, int c1, int c2) {
+        Model.El e = new Model.El();
+        e.kind = Model.KIND_CLIP; e.clipId = id; e.fillColor = c1; e.clipColor2 = c2;
+        e.x = x; e.y = y; e.w = size; e.h = size;
+        pg.els.add(e);
     }
 
     /* --------------------------- builders ------------------------------ */

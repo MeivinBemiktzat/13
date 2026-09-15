@@ -75,12 +75,29 @@ public final class Renderer {
             p.setColor(0xFFEEEEEE);
             c.drawRect(0, 0, pw, ph, p);
             if (b != null) drawCoverBitmap(c, b, 0, 0, pw, ph);
+        } else if (page.bgType == Model.BG_RADIAL) {
+            android.graphics.RadialGradient rg = new android.graphics.RadialGradient(
+                    pw / 2f, ph / 2f, Math.max(pw, ph) / 1.4f, page.bgColor, page.bgColor2, Shader.TileMode.CLAMP);
+            p.setShader(rg); c.drawRect(0, 0, pw, ph, p); p.setShader(null);
+        } else if (page.bgType == Model.BG_PATTERN) {
+            p.setColor(page.bgColor); c.drawRect(0, 0, pw, ph, p);
+            Patterns.draw(c, page.patternId, pw, ph, page.bgColor2);
         } else {
             p.setColor(page.bgColor);
             c.drawRect(0, 0, pw, ph, p);
         }
 
         for (Model.El e : page.els) drawEl(c, e, img);
+
+        if (page.overlay == 1) {
+            android.graphics.RadialGradient v = new android.graphics.RadialGradient(
+                    pw / 2f, ph / 2f, Math.max(pw, ph) * 0.72f,
+                    new int[]{0x00000000, 0x00000000, 0x55000000}, new float[]{0f, 0.65f, 1f}, Shader.TileMode.CLAMP);
+            p.setShader(v); c.drawRect(0, 0, pw, ph, p); p.setShader(null);
+        } else if (page.overlay == 2) {
+            p.setShader(new LinearGradient(0, 0, 0, ph, 0x40FFFFFF, 0x00FFFFFF, Shader.TileMode.CLAMP));
+            c.drawRect(0, 0, pw, ph, p); p.setShader(null);
+        }
     }
 
     public void drawEl(Canvas c, Model.El e, ImageProvider img) {
@@ -92,31 +109,43 @@ public final class Renderer {
             case Model.KIND_TEXT: drawText(c, e, alpha); break;
             case Model.KIND_SHAPE: drawShape(c, e, alpha); break;
             case Model.KIND_STICKER: drawSticker(c, e, alpha); break;
+            case Model.KIND_CLIP: drawClip(c, e, alpha); break;
         }
         c.restore();
     }
 
+    private final Paint clipPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    private void drawClip(Canvas c, Model.El e, int alpha) {
+        clipPaint.reset();
+        clipPaint.setAntiAlias(true);
+        clipPaint.setAlpha(alpha);
+        Clipart.draw(c, e.clipId, e.x, e.y, e.w, e.h, clipPaint, e.fillColor, e.clipColor2);
+    }
+
     private void drawPhoto(Canvas c, Model.El e, ImageProvider img, int alpha) {
-        r.set(e.x, e.y, e.x + e.w, e.y + e.h);
+        float mi = Frames.matInset(e.frameStyle) * Math.min(e.w, e.h);
+        r.set(e.x + mi, e.y + mi, e.x + e.w - mi, e.y + e.h - mi);
         Path clip = new Path();
         clip.addRoundRect(r, e.corner, e.corner, Path.Direction.CW);
+        final float px = r.left, py = r.top, pw = r.width(), ph = r.height();
         c.save();
         c.clipPath(clip);
         Bitmap b = img != null && e.uri != null ? img.get(e.uri) : null;
         if (b != null) {
             bmpPaint.setAlpha(alpha);
             bmpPaint.setColorFilter(filterFor(e.filter));
-            drawCoverBitmap(c, b, e.x, e.y, e.w, e.h, e.photoScale, e.photoDx, e.photoDy);
+            drawCoverBitmap(c, b, px, py, pw, ph, e.photoScale, e.photoDx, e.photoDy);
             bmpPaint.setColorFilter(null);
         } else {
             p.setShader(null);
             p.setStyle(Paint.Style.FILL);
             p.setColor(0xFFE0E0E0);
-            c.drawRect(r, p);
+            c.drawRect(px, py, px + pw, py + ph, p);
             p.setColor(0xFF9E9E9E);
             p.setTextAlign(Paint.Align.CENTER);
-            p.setTextSize(Math.min(e.w, e.h) * 0.16f);
-            c.drawText("＋ תמונה", e.x + e.w / 2, e.y + e.h / 2, p);
+            p.setTextSize(Math.min(pw, ph) * 0.16f);
+            c.drawText("＋ תמונה", px + pw / 2, py + ph / 2, p);
             p.setTextAlign(Paint.Align.LEFT);
         }
         c.restore();
@@ -125,11 +154,17 @@ public final class Renderer {
             p.setStyle(Paint.Style.STROKE);
             p.setStrokeWidth(e.borderW);
             p.setColor(e.borderColor);
-            r.set(e.x + e.borderW / 2, e.y + e.borderW / 2, e.x + e.w - e.borderW / 2, e.y + e.h - e.borderW / 2);
+            r.set(px + e.borderW / 2, py + e.borderW / 2, px + pw - e.borderW / 2, py + ph - e.borderW / 2);
             c.drawRoundRect(r, e.corner, e.corner, p);
             p.setStyle(Paint.Style.FILL);
         }
+        if (e.frameStyle > 0) {
+            r.set(px, py, px + pw, py + ph);
+            Frames.draw(c, e.frameStyle, r, e.corner, e.borderColor, framePaint);
+        }
     }
+
+    private final Paint framePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private void drawCoverBitmap(Canvas c, Bitmap b, float x, float y, float w, float h) {
         drawCoverBitmap(c, b, x, y, w, h, 1f, 0f, 0f);
