@@ -1,0 +1,236 @@
+package com.mikdash.albumdesigner;
+
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.Typeface;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.text.TextPaint;
+
+/**
+ * Draws a page and its elements in canonical page coordinates. Callers scale
+ * the canvas beforehand so the same routine serves the on-screen editor and
+ * the full-resolution exporter, keeping WYSIWYG output.
+ */
+public final class Renderer {
+
+    public interface ImageProvider {
+        Bitmap get(String uri);
+    }
+
+    private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private final Paint bmpPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private final RectF r = new RectF();
+
+    public void drawPage(Canvas c, Model.Page page, int pw, int ph, ImageProvider img) {
+        // background
+        p.setShader(null);
+        p.setStyle(Paint.Style.FILL);
+        if (page.bgType == Model.BG_GRADIENT) {
+            double a = Math.toRadians(page.gradientAngle);
+            float ex = (float) Math.cos(a) * pw, ey = (float) Math.sin(a) * ph;
+            p.setShader(new LinearGradient(0, 0, ex, ey, page.bgColor, page.bgColor2, Shader.TileMode.CLAMP));
+            c.drawRect(0, 0, pw, ph, p);
+            p.setShader(null);
+        } else if (page.bgType == Model.BG_PHOTO && page.bgUri != null && img != null) {
+            Bitmap b = img.get(page.bgUri);
+            p.setColor(0xFFEEEEEE);
+            c.drawRect(0, 0, pw, ph, p);
+            if (b != null) drawCoverBitmap(c, b, 0, 0, pw, ph);
+        } else {
+            p.setColor(page.bgColor);
+            c.drawRect(0, 0, pw, ph, p);
+        }
+
+        for (Model.El e : page.els) drawEl(c, e, img);
+    }
+
+    public void drawEl(Canvas c, Model.El e, ImageProvider img) {
+        c.save();
+        c.rotate(e.rotation, e.x + e.w / 2, e.y + e.h / 2);
+        int alpha = Math.max(0, Math.min(255, e.alpha));
+        switch (e.kind) {
+            case Model.KIND_PHOTO: drawPhoto(c, e, img, alpha); break;
+            case Model.KIND_TEXT: drawText(c, e, alpha); break;
+            case Model.KIND_SHAPE: drawShape(c, e, alpha); break;
+            case Model.KIND_STICKER: drawSticker(c, e, alpha); break;
+        }
+        c.restore();
+    }
+
+    private void drawPhoto(Canvas c, Model.El e, ImageProvider img, int alpha) {
+        r.set(e.x, e.y, e.x + e.w, e.y + e.h);
+        Path clip = new Path();
+        clip.addRoundRect(r, e.corner, e.corner, Path.Direction.CW);
+        c.save();
+        c.clipPath(clip);
+        Bitmap b = img != null && e.uri != null ? img.get(e.uri) : null;
+        if (b != null) {
+            bmpPaint.setAlpha(alpha);
+            drawCoverBitmap(c, b, e.x, e.y, e.w, e.h, e.photoScale, e.photoDx, e.photoDy);
+        } else {
+            p.setShader(null);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(0xFFE0E0E0);
+            c.drawRect(r, p);
+            p.setColor(0xFF9E9E9E);
+            p.setTextAlign(Paint.Align.CENTER);
+            p.setTextSize(Math.min(e.w, e.h) * 0.16f);
+            c.drawText("＋ תמונה", e.x + e.w / 2, e.y + e.h / 2, p);
+            p.setTextAlign(Paint.Align.LEFT);
+        }
+        c.restore();
+        if (e.borderW > 0) {
+            p.setShader(null);
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(e.borderW);
+            p.setColor(e.borderColor);
+            r.set(e.x + e.borderW / 2, e.y + e.borderW / 2, e.x + e.w - e.borderW / 2, e.y + e.h - e.borderW / 2);
+            c.drawRoundRect(r, e.corner, e.corner, p);
+            p.setStyle(Paint.Style.FILL);
+        }
+    }
+
+    private void drawCoverBitmap(Canvas c, Bitmap b, float x, float y, float w, float h) {
+        drawCoverBitmap(c, b, x, y, w, h, 1f, 0f, 0f);
+    }
+
+    private void drawCoverBitmap(Canvas c, Bitmap b, float x, float y, float w, float h,
+                                 float scale, float dx, float dy) {
+        float bw = b.getWidth(), bh = b.getHeight();
+        float s = Math.max(w / bw, h / bh) * scale;
+        float dw = bw * s, dh = bh * s;
+        float left = x + (w - dw) / 2 + dx * w;
+        float top = y + (h - dh) / 2 + dy * h;
+        r.set(left, top, left + dw, top + dh);
+        c.drawBitmap(b, null, r, bmpPaint);
+    }
+
+    private void drawText(Canvas c, Model.El e, int alpha) {
+        TextPaint tp = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+        tp.setColor(e.textColor);
+        tp.setAlpha(alpha);
+        tp.setTextSize(e.textSize);
+        tp.setTypeface(Palette.font(e.font, e.bold, e.italic));
+        tp.setUnderlineText(e.underline);
+        if (e.letterSpacing != 0) try { tp.setLetterSpacing(e.letterSpacing); } catch (Throwable ignored) {}
+        if (e.shadow == 1) tp.setShadowLayer(e.textSize * 0.08f, 0, e.textSize * 0.05f, 0x88000000);
+        Layout.Alignment al = e.align == Model.ALIGN_LEFT ? Layout.Alignment.ALIGN_OPPOSITE
+                : e.align == Model.ALIGN_RIGHT ? Layout.Alignment.ALIGN_NORMAL
+                : Layout.Alignment.ALIGN_CENTER;
+        int width = Math.max(1, (int) e.w);
+        StaticLayout sl = new StaticLayout(e.text == null ? "" : e.text, tp, width,
+                al, 1.0f, 0.0f, false);
+        float th = sl.getHeight();
+        c.save();
+        if (e.bgBox != 0) {
+            p.setShader(null); p.setStyle(Paint.Style.FILL);
+            p.setColor(e.bgBox); p.setAlpha(alpha);
+            float pad = e.textSize * 0.3f;
+            r.set(e.x - pad, e.y + (e.h - th) / 2 - pad, e.x + e.w + pad, e.y + (e.h - th) / 2 + th + pad);
+            c.drawRoundRect(r, pad, pad, p);
+            p.setAlpha(255);
+        }
+        c.translate(e.x, e.y + (e.h - th) / 2);
+        sl.draw(c);
+        c.restore();
+    }
+
+    private void drawSticker(Canvas c, Model.El e, int alpha) {
+        p.setShader(null);
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(0xFF000000);
+        p.setAlpha(alpha);
+        p.setTextAlign(Paint.Align.CENTER);
+        p.setTypeface(Typeface.DEFAULT);
+        float size = Math.min(e.w, e.h);
+        p.setTextSize(size * 0.86f);
+        Paint.FontMetrics fm = p.getFontMetrics();
+        float baseline = e.y + e.h / 2 - (fm.ascent + fm.descent) / 2;
+        c.drawText(e.emoji == null ? "★" : e.emoji, e.x + e.w / 2, baseline, p);
+        p.setTextAlign(Paint.Align.LEFT);
+        p.setAlpha(255);
+    }
+
+    private void drawShape(Canvas c, Model.El e, int alpha) {
+        p.setShader(null);
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(e.fillColor);
+        p.setAlpha(Color.alpha(e.fillColor) * alpha / 255);
+        Path path = shapePath(e);
+        if (e.shapeType == Model.SHAPE_LINE) {
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeCap(Paint.Cap.ROUND);
+            p.setStrokeWidth(Math.max(4, e.h));
+            p.setColor(e.fillColor); p.setAlpha(alpha);
+            c.drawLine(e.x, e.y + e.h / 2, e.x + e.w, e.y + e.h / 2, p);
+        } else {
+            c.drawPath(path, p);
+        }
+        if (e.strokeW > 0 && e.shapeType != Model.SHAPE_LINE) {
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(e.strokeW);
+            p.setColor(e.strokeColor);
+            p.setAlpha(Color.alpha(e.strokeColor) * alpha / 255);
+            c.drawPath(path, p);
+        }
+        p.setAlpha(255);
+        p.setStyle(Paint.Style.FILL);
+    }
+
+    private Path shapePath(Model.El e) {
+        Path path = new Path();
+        float x = e.x, y = e.y, w = e.w, h = e.h;
+        r.set(x, y, x + w, y + h);
+        switch (e.shapeType) {
+            case Model.SHAPE_ROUND:
+                path.addRoundRect(r, Math.min(w, h) * 0.18f, Math.min(w, h) * 0.18f, Path.Direction.CW);
+                break;
+            case Model.SHAPE_CIRCLE:
+                path.addOval(r, Path.Direction.CW);
+                break;
+            case Model.SHAPE_TRIANGLE:
+                path.moveTo(x + w / 2, y);
+                path.lineTo(x + w, y + h);
+                path.lineTo(x, y + h);
+                path.close();
+                break;
+            case Model.SHAPE_HEART:
+                heart(path, x, y, w, h);
+                break;
+            case Model.SHAPE_STAR:
+                star(path, x + w / 2, y + h / 2, Math.min(w, h) / 2, Math.min(w, h) / 2 * 0.45f, 5);
+                break;
+            default:
+                path.addRect(r, Path.Direction.CW);
+        }
+        return path;
+    }
+
+    private void heart(Path path, float x, float y, float w, float h) {
+        path.moveTo(x + w / 2, y + h * 0.28f);
+        path.cubicTo(x + w * 0.15f, y - h * 0.10f, x - w * 0.25f, y + h * 0.45f, x + w / 2, y + h);
+        path.cubicTo(x + w * 1.25f, y + h * 0.45f, x + w * 0.85f, y - h * 0.10f, x + w / 2, y + h * 0.28f);
+        path.close();
+    }
+
+    private void star(Path path, float cx, float cy, float outer, float inner, int points) {
+        double step = Math.PI / points;
+        double a = -Math.PI / 2;
+        path.moveTo(cx + (float) Math.cos(a) * outer, cy + (float) Math.sin(a) * outer);
+        for (int i = 1; i < points * 2; i++) {
+            a += step;
+            float rad = (i % 2 == 0) ? outer : inner;
+            path.lineTo(cx + (float) Math.cos(a) * rad, cy + (float) Math.sin(a) * rad);
+        }
+        path.close();
+    }
+}
