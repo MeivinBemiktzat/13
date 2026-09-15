@@ -107,6 +107,12 @@ public final class Templates {
             "פסטל", "שחור זהב", "משפחה", "פרחוני 🌸",
             "זר פרחים", "באנר מסיבה", "פספורט הרפתקאות", "שמי כוכבים",
             "בוהו טבעי", "מלכותי", "חורף קסום", "אלבום קלאסי",
+            // 22+ image-sticker templates
+            "מסגרת פרחונית", "זר ורדים", "אלגנט זהב", "תינוק מתוק", "יום הולדת",
+            "חתונה מזל טוב", "פרחי בר", "וינטג' זכרונות", "חיות מחמד", "קיץ בים",
+            "חורף לבן", "יום בבית ספר", "אלוף הספורט", "טיול בטבע", "מסיבת מוזיקה",
+            "פסטל חלומי", "גיאומטרי מודרני", "באנר קלאסי", "פינות זהב", "אהבה פורחת",
+            "משפחה שלנו", "גן פורח", "טעים במטבח", "רכות פסטל", "חגיגת פרחים",
     };
 
     public static Model.Page theme(int idx, int pw, int ph) {
@@ -287,11 +293,214 @@ public final class Templates {
                 photo(pg, pw * 0.14f, ph * 0.22f, pw * 0.72f, ph * 0.58f, pw * 0.01f);
                 clip(pg, 37, pw * 0.3f, ph * 0.86f, pw * 0.4f, 0xFFB59F6B, 0xFFB59F6B);
                 break;
+            case 22: // floral frame
+                grad(pg, 0xFFFFF6F0, 0xFFFCE7DE, 90);
+                photo(pg, pw * 0.16f, ph * 0.14f, pw * 0.68f, ph * 0.56f, pw * 0.02f);
+                img(pg, "frames/05.png", pw * 0.10f, ph * 0.08f, pw * 0.80f, ph * 0.68f);
+                img(pg, "flowers/01.png", pw * 0.00f, ph * 0.66f, pw * 0.26f, pw * 0.26f);
+                img(pg, "flowers/06.png", pw * 0.74f, ph * 0.66f, pw * 0.26f, pw * 0.26f);
+                title(pg, "רגעים יפים", pw, ph * 0.80f, 0xFFC2185B, 5, false);
+                break;
+            case 23: // rose bouquet
+                pg.bgType = Model.BG_PATTERN; pg.bgColor = 0xFFFFFBF7; pg.bgColor2 = 0xFFF3DDD0; pg.patternId = 0;
+                img(pg, "banners/01.png", pw * 0.2f, ph * 0.04f, pw * 0.6f, ph * 0.12f);
+                photo(pg, pw * 0.14f, ph * 0.2f, pw * 0.72f, ph * 0.5f, pw * 0.03f);
+                img(pg, "flowers/02.png", pw * 0.00f, ph * 0.60f, pw * 0.3f, pw * 0.3f);
+                img(pg, "flowers/09.png", pw * 0.70f, ph * 0.62f, pw * 0.3f, pw * 0.3f);
+                img(pg, "ornaments/06.png", pw * 0.25f, ph * 0.74f, pw * 0.5f, pw * 0.14f);
+                title(pg, "באהבה", pw, ph * 0.82f, 0xFFAD1457, 5, true);
+                break;
+            case 24: // elegant gold
+                solid(pg, 0xFF14110F); pg.overlay = 1;
+                img(pg, "ornaments/01.png", pw * 0.02f, ph * 0.03f, pw * 0.26f, pw * 0.26f);
+                img(pg, "ornaments/01.png", pw * 0.72f, ph * 0.03f, pw * 0.26f, pw * 0.26f, 90);
+                img(pg, "ornaments/01.png", pw * 0.72f, ph * 0.72f, pw * 0.26f, pw * 0.26f, 180);
+                img(pg, "ornaments/01.png", pw * 0.02f, ph * 0.72f, pw * 0.26f, pw * 0.26f, 270);
+                photo(pg, pw * 0.18f, ph * 0.2f, pw * 0.64f, ph * 0.56f, pw * 0.02f);
+                title(pg, "ELEGANCE", pw, ph * 0.82f, 0xFFD4AF37, 3, true);
+                break;
+            case 25: // sweet baby
+                grad(pg, 0xFFE8F4FF, 0xFFD6EAFB, 90);
+                img(pg, "baby/07.png", pw * 0.00f, ph * 0.66f, pw * 0.28f, pw * 0.28f);
+                img(pg, "baby/01.png", pw * 0.72f, ph * 0.66f, pw * 0.28f, pw * 0.28f);
+                img(pg, "baby/06.png", pw * 0.78f, ph * 0.02f, pw * 0.2f, pw * 0.2f);
+                photo(pg, pw * 0.16f, ph * 0.14f, pw * 0.68f, ph * 0.52f, pw * 0.08f);
+                title(pg, "ברוך הבא", pw, ph * 0.74f, 0xFF1E88E5, 6, true);
+                break;
+            case 26: // birthday
+                grad(pg, 0xFFFFF3E0, 0xFFFFE0B2, 90);
+                img(pg, "party/03.png", pw * 0.02f, ph * 0.02f, pw * 0.2f, pw * 0.2f);
+                img(pg, "party/05.png", pw * 0.78f, ph * 0.02f, pw * 0.2f, pw * 0.2f);
+                img(pg, "party/04.png", pw * 0.40f, ph * 0.72f, pw * 0.24f, pw * 0.24f);
+                img(pg, "banners/03.png", pw * 0.18f, ph * 0.04f, pw * 0.64f, ph * 0.14f);
+                photo(pg, pw * 0.14f, ph * 0.22f, pw * 0.72f, ph * 0.48f, pw * 0.04f);
+                title(pg, "יום הולדת שמח", pw, ph * 0.72f, 0xFFE65100, 2, true);
+                break;
+            case 27: // wedding
+                solid(pg, 0xFFFFFDFB);
+                photo(pg, pw * 0.18f, ph * 0.16f, pw * 0.64f, ph * 0.52f, pw * 0.02f);
+                img(pg, "frames/03.png", pw * 0.12f, ph * 0.10f, pw * 0.76f, ph * 0.64f);
+                img(pg, "ornaments/07.png", pw * 0.25f, ph * 0.76f, pw * 0.5f, pw * 0.14f);
+                title(pg, "מזל טוב", pw, ph * 0.83f, 0xFFB8860B, 3, true);
+                break;
+            case 28: // wildflowers
+                solid(pg, 0xFFF7FAF3);
+                for (int i = 0; i < 4; i++) img(pg, "flowers/" + String.format("%02d", 3 + i) + ".png",
+                        pw * (0.02f + i * 0.24f), ph * (i % 2 == 0 ? 0.02f : 0.80f), pw * 0.18f, pw * 0.18f);
+                photo(pg, pw * 0.16f, ph * 0.2f, pw * 0.68f, ph * 0.56f, pw * 0.03f);
+                title(pg, "פריחה", pw, ph * 0.10f, 0xFF558B2F, 5, false);
+                break;
+            case 29: // vintage memories
+                grad(pg, 0xFFFBF6EA, 0xFFEFE3CC, 90);
+                img(pg, "banners/09.png", pw * 0.2f, ph * 0.04f, pw * 0.6f, ph * 0.13f);
+                photo(pg, pw * 0.14f, ph * 0.2f, pw * 0.72f, ph * 0.5f, pw * 0.01f);
+                img(pg, "vintage/08.png", pw * 0.02f, ph * 0.72f, pw * 0.2f, pw * 0.2f);
+                img(pg, "vintage/12.png", pw * 0.78f, ph * 0.72f, pw * 0.2f, pw * 0.2f);
+                title(pg, "זכרונות", pw, ph * 0.82f, 0xFF6D4C41, 3, false);
+                break;
+            case 30: // pets
+                grad(pg, 0xFFEFF7FF, 0xFFDCEEFF, 90);
+                img(pg, "pets/01.png", pw * 0.02f, ph * 0.74f, pw * 0.2f, pw * 0.2f);
+                img(pg, "pets/02.png", pw * 0.78f, ph * 0.02f, pw * 0.2f, pw * 0.2f);
+                photo(pg, pw * 0.16f, ph * 0.16f, pw * 0.68f, ph * 0.54f, pw * 0.06f);
+                title(pg, "החבר הכי טוב", pw, ph * 0.76f, 0xFF00838F, 5, true);
+                break;
+            case 31: // summer beach
+                grad(pg, 0xFF80D0F0, 0xFFCDEFFF, 90);
+                img(pg, "seasons/04.png", pw * 0.78f, ph * 0.02f, pw * 0.2f, pw * 0.2f);
+                img(pg, "seasons/13.png", pw * 0.02f, ph * 0.74f, pw * 0.22f, pw * 0.22f);
+                photo(pg, m, ph * 0.18f, pw - 2 * m, ph * 0.52f, pw * 0.04f);
+                title(pg, "קיץ שלנו", pw, ph * 0.78f, 0xFF0277BD, 2, true);
+                break;
+            case 32: // winter white
+                grad(pg, 0xFFF0F7FF, 0xFFD8E9F5, 90);
+                for (int i = 0; i < 5; i++) img(pg, "seasons/01.png",
+                        pw * (0.04f + i * 0.2f), ph * (0.03f + (i % 2) * 0.05f), pw * 0.1f, pw * 0.1f);
+                photo(pg, m, ph * 0.2f, pw - 2 * m, ph * 0.5f, pw * 0.06f);
+                title(pg, "חורף לבן", pw, ph * 0.76f, 0xFF1565C0, 6, true);
+                break;
+            case 33: // school day
+                solid(pg, 0xFFFFFDF5);
+                img(pg, "school/01.png", pw * 0.02f, ph * 0.02f, pw * 0.16f, pw * 0.16f);
+                img(pg, "school/05.png", pw * 0.80f, ph * 0.02f, pw * 0.16f, pw * 0.16f);
+                img(pg, "banners/05.png", pw * 0.2f, ph * 0.72f, pw * 0.6f, ph * 0.14f);
+                photo(pg, pw * 0.14f, ph * 0.2f, pw * 0.72f, ph * 0.48f, pw * 0.03f);
+                title(pg, "שנה טובה", pw, ph * 0.86f, 0xFFD84315, 2, true);
+                break;
+            case 34: // sports
+                grad(pg, 0xFF37474F, 0xFF546E7A, 90);
+                img(pg, "sports/03.png", pw * 0.02f, ph * 0.74f, pw * 0.2f, pw * 0.2f);
+                img(pg, "sports/05.png", pw * 0.78f, ph * 0.74f, pw * 0.2f, pw * 0.2f);
+                photo(pg, m, ph * 0.16f, pw - 2 * m, ph * 0.52f, pw * 0.03f);
+                title(pg, "אלוף!", pw, ph * 0.76f, 0xFFFFEB3B, 2, true);
+                break;
+            case 35: // nature trip
+                grad(pg, 0xFFDCEFD3, 0xFFB6D7A8, 90);
+                img(pg, "nature/01.png", pw * 0.02f, ph * 0.02f, pw * 0.18f, pw * 0.18f);
+                img(pg, "nature/12.png", pw * 0.80f, ph * 0.76f, pw * 0.18f, pw * 0.18f);
+                photo(pg, m, ph * 0.18f, pw - 2 * m, ph * 0.54f, pw * 0.04f);
+                title(pg, "בטבע", pw, ph * 0.80f, 0xFF2E7D32, 5, true);
+                break;
+            case 36: // music party
+                grad(pg, 0xFF6A11CB, 0xFFEC407A, 60);
+                img(pg, "music/01.png", pw * 0.02f, ph * 0.72f, pw * 0.2f, pw * 0.2f);
+                img(pg, "music/07.png", pw * 0.78f, ph * 0.04f, pw * 0.2f, pw * 0.2f);
+                photo(pg, m, ph * 0.2f, pw - 2 * m, ph * 0.5f, pw * 0.04f);
+                title(pg, "המסיבה שלנו", pw, ph * 0.76f, 0xFFFFFFFF, 2, true);
+                break;
+            case 37: // dreamy pastel
+                grad(pg, 0xFFFDE7F3, 0xFFE1F0FF, 60);
+                img(pg, "shapes/06.png", pw * 0.70f, ph * 0.04f, pw * 0.26f, pw * 0.16f);
+                img(pg, "shapes/01.png", pw * 0.02f, ph * 0.78f, pw * 0.2f, pw * 0.14f);
+                photo(pg, pw * 0.16f, ph * 0.16f, pw * 0.68f, ph * 0.54f, pw * 0.08f);
+                title(pg, "חלומי", pw, ph * 0.76f, 0xFF8E24AA, 6, false);
+                break;
+            case 38: // modern geometric
+                solid(pg, 0xFFFAFAFA);
+                img(pg, "shapes/02.png", pw * 0.02f, ph * 0.02f, pw * 0.22f, pw * 0.22f);
+                img(pg, "shapes/08.png", pw * 0.76f, ph * 0.76f, pw * 0.22f, pw * 0.22f);
+                photo(pg, pw * 0.14f, ph * 0.16f, pw * 0.72f, ph * 0.56f, pw * 0.0f);
+                title(pg, "MODERN", pw, ph * 0.78f, 0xFF212121, 1, true);
+                break;
+            case 39: // classic banner
+                grad(pg, 0xFFF6F1E7, 0xFFEDE3CC, 90);
+                img(pg, "banners/02.png", pw * 0.14f, ph * 0.05f, pw * 0.72f, ph * 0.16f);
+                img(pg, "ornaments/13.png", pw * 0.3f, ph * 0.74f, pw * 0.4f, pw * 0.1f);
+                photo(pg, pw * 0.14f, ph * 0.24f, pw * 0.72f, ph * 0.46f, pw * 0.02f);
+                title(pg, "הסיפור שלנו", pw, ph * 0.84f, 0xFF795548, 3, false);
+                break;
+            case 40: // gold corners
+                solid(pg, 0xFFFFFFFF);
+                img(pg, "ornaments/02.png", pw * 0.01f, ph * 0.02f, pw * 0.24f, pw * 0.24f);
+                img(pg, "ornaments/02.png", pw * 0.75f, ph * 0.02f, pw * 0.24f, pw * 0.24f, 90);
+                img(pg, "ornaments/02.png", pw * 0.75f, ph * 0.74f, pw * 0.24f, pw * 0.24f, 180);
+                img(pg, "ornaments/02.png", pw * 0.01f, ph * 0.74f, pw * 0.24f, pw * 0.24f, 270);
+                photo(pg, pw * 0.2f, ph * 0.22f, pw * 0.6f, ph * 0.54f, pw * 0.02f);
+                title(pg, "יוקרה", pw, ph * 0.10f, 0xFFB8860B, 3, true);
+                break;
+            case 41: // blooming love
+                grad(pg, 0xFFFFE3EC, 0xFFFFF0F5, 90);
+                img(pg, "flowers/07.png", pw * 0.00f, ph * 0.00f, pw * 0.24f, pw * 0.24f);
+                img(pg, "flowers/10.png", pw * 0.76f, ph * 0.76f, pw * 0.24f, pw * 0.24f);
+                photo(pg, pw * 0.18f, ph * 0.18f, pw * 0.64f, ph * 0.5f, pw * 0.5f);
+                title(pg, "אהבה", pw, ph * 0.74f, 0xFFD81B60, 5, true);
+                break;
+            case 42: // our family
+                grad(pg, 0xFFFFF8E1, 0xFFFFE0B2, 90);
+                img(pg, "banners/04.png", pw * 0.18f, ph * 0.03f, pw * 0.64f, ph * 0.13f);
+                photo(pg, m, ph * 0.18f, (pw - 3 * m) / 2, ph * 0.34f, pw * 0.03f);
+                photo(pg, m * 2 + (pw - 3 * m) / 2, ph * 0.18f, (pw - 3 * m) / 2, ph * 0.34f, pw * 0.03f);
+                photo(pg, m, ph * 0.55f, pw - 2 * m, ph * 0.34f, pw * 0.03f);
+                img(pg, "flowers/12.png", pw * 0.8f, ph * 0.5f, pw * 0.18f, pw * 0.18f);
+                break;
+            case 43: // blooming garden
+                grad(pg, 0xFFEAF6E1, 0xFFCDE8BE, 90);
+                img(pg, "garden/06.png", pw * 0.02f, ph * 0.74f, pw * 0.2f, pw * 0.2f);
+                img(pg, "garden/11.png", pw * 0.78f, ph * 0.74f, pw * 0.2f, pw * 0.2f);
+                img(pg, "flowers/05.png", pw * 0.78f, ph * 0.02f, pw * 0.18f, pw * 0.18f);
+                photo(pg, pw * 0.14f, ph * 0.16f, pw * 0.66f, ph * 0.54f, pw * 0.04f);
+                title(pg, "הגינה שלי", pw, ph * 0.80f, 0xFF33691E, 5, false);
+                break;
+            case 44: // tasty kitchen
+                grad(pg, 0xFFFFF0E6, 0xFFFFE0C7, 90);
+                img(pg, "food/02.png", pw * 0.02f, ph * 0.02f, pw * 0.18f, pw * 0.18f);
+                img(pg, "food/08.png", pw * 0.80f, ph * 0.76f, pw * 0.18f, pw * 0.18f);
+                photo(pg, pw * 0.14f, ph * 0.18f, pw * 0.72f, ph * 0.52f, pw * 0.04f);
+                title(pg, "טעים!", pw, ph * 0.78f, 0xFFBF360C, 2, true);
+                break;
+            case 45: // soft pastel
+                grad(pg, 0xFFF3E5F5, 0xFFE1F5FE, 45);
+                img(pg, "flowers/11.png", pw * 0.00f, ph * 0.70f, pw * 0.26f, pw * 0.26f);
+                img(pg, "flowers/14.png", pw * 0.74f, ph * 0.00f, pw * 0.26f, pw * 0.26f);
+                photo(pg, pw * 0.16f, ph * 0.16f, pw * 0.68f, ph * 0.54f, pw * 0.06f);
+                img(pg, "frames/07.png", pw * 0.10f, ph * 0.10f, pw * 0.80f, ph * 0.66f);
+                title(pg, "עדין ורך", pw, ph * 0.78f, 0xFF7B1FA2, 6, false);
+                break;
+            case 46: // flower celebration
+                solid(pg, 0xFFFFFBF8);
+                img(pg, "flowers/01.png", pw * 0.00f, ph * 0.00f, pw * 0.2f, pw * 0.2f);
+                img(pg, "flowers/06.png", pw * 0.80f, ph * 0.00f, pw * 0.2f, pw * 0.2f);
+                img(pg, "flowers/09.png", pw * 0.00f, ph * 0.78f, pw * 0.2f, pw * 0.2f);
+                img(pg, "flowers/13.png", pw * 0.80f, ph * 0.78f, pw * 0.2f, pw * 0.2f);
+                photo(pg, pw * 0.2f, ph * 0.2f, pw * 0.6f, ph * 0.52f, pw * 0.04f);
+                title(pg, "חוגגים", pw, ph * 0.78f, 0xFFC2185B, 5, true);
+                break;
             default:
                 solid(pg, 0xFFFFFFFF);
                 photo(pg, m, m, pw - 2 * m, ph - 2 * m, pw * 0.03f);
         }
         return pg;
+    }
+
+    private static void img(Model.Page pg, String path, float x, float y, float w, float h) {
+        img(pg, path, x, y, w, h, 0f);
+    }
+
+    private static void img(Model.Page pg, String path, float x, float y, float w, float h, float rot) {
+        Model.El e = new Model.El();
+        e.kind = Model.KIND_IMAGE; e.uri = "asset:///stickers/" + path;
+        e.x = x; e.y = y; e.w = w; e.h = h; e.rotation = rot;
+        pg.els.add(e);
     }
 
     private static void clip(Model.Page pg, int id, float x, float y, float size, int c1, int c2) {

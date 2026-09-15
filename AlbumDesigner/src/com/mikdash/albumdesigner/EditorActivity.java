@@ -358,10 +358,12 @@ public class EditorActivity extends Activity implements EditorView.Listener {
 
     /* ----------------------- image stickers ---------------------------- */
 
-    private static final String[] STK_FOLDERS = {"party", "kitchen", "music", "seasons", "vintage",
-            "garden", "school", "travel", "sports", "nature"};
-    private static final String[] STK_NAMES = {"מסיבה 🎉", "מטבח 🍰", "מוזיקה 🎵", "עונות ☀", "וינטג' 🕰",
-            "גינה 🌿", "בית ספר ✏", "נסיעות ✈", "ספורט ⚽", "טבע 🏕"};
+    private static final String[] STK_FOLDERS = {"frames", "flowers", "party", "baby", "banners",
+            "ornaments", "shapes", "food", "music", "sports", "travel", "school", "garden",
+            "seasons", "nature", "pets", "vintage"};
+    private static final String[] STK_NAMES = {"מסגרות 🖼", "פרחים 🌸", "מסיבה 🎉", "תינוק 👶", "סרטים 🎀",
+            "עיטורי זהב ✨", "אלמנטים 🔷", "מטבח 🍰", "מוזיקה 🎵", "ספורט ⚽", "נסיעות ✈", "בית ספר ✏",
+            "גינה 🌿", "עונות ☀", "טבע 🏕", "חיות מחמד 🐾", "וינטג' 🕰"};
 
     private void imageStickerDialog() {
         new AlertDialog.Builder(this).setTitle("מדבקות ואיורים")
@@ -644,7 +646,7 @@ public class EditorActivity extends Activity implements EditorView.Listener {
         Canvas cv = new Canvas(bmp);
         cv.drawColor(0xFFFFFFFF);
         cv.scale((float) w / pw, (float) h / ph);
-        new Renderer().drawPage(cv, pg, pw, ph, null);
+        new Renderer().drawPage(cv, pg, pw, ph, editor.getImages());
         return bmp;
     }
 
