@@ -87,6 +87,14 @@ public class EditorView extends View {
         if (selected != null && page.els.remove(selected)) { page.els.add(0, selected); edited(); }
     }
 
+    public void centerH() {
+        if (selected != null) { beginChange(); selected.x = (project.pw() - selected.w) / 2f; edited(); }
+    }
+
+    public void centerV() {
+        if (selected != null) { beginChange(); selected.y = (project.ph() - selected.h) / 2f; edited(); }
+    }
+
     public void duplicateSelected() {
         if (selected != null) { Model.El c = selected.copy(); page.els.add(c); select(c); edited(); }
     }

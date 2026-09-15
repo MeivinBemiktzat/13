@@ -176,6 +176,8 @@ public class EditorActivity extends Activity implements EditorView.Listener {
         row.setPadding(p, p, p, p);
         row.addView(tool("✎", "עריכה", new Runnable() { public void run() { editSelected(); } }));
         row.addView(tool("⧉", "שכפול", new Runnable() { public void run() { editor.duplicateSelected(); } }));
+        row.addView(tool("↔", "מרכז אופקי", new Runnable() { public void run() { editor.centerH(); } }));
+        row.addView(tool("↕", "מרכז אנכי", new Runnable() { public void run() { editor.centerV(); } }));
         row.addView(tool("◹", "שקיפות", new Runnable() { public void run() { alphaDialog(); } }));
         row.addView(tool("⤒", "קדימה", new Runnable() { public void run() { editor.beginChange(); editor.bringToFront(); } }));
         row.addView(tool("⤓", "אחורה", new Runnable() { public void run() { editor.beginChange(); editor.sendToBack(); } }));
@@ -495,6 +497,19 @@ public class EditorActivity extends Activity implements EditorView.Listener {
         box.addView(Ui.pillButton(this, "החלף תמונה", 0xFF7B1FA2, 0xFFFFFFFF, new View.OnClickListener() {
             public void onClick(View v) { pendingPhotoTarget = e; launchPicker(REQ_PICK); dismissTop(); }
         }));
+        addSectionTitle(box, "פילטר");
+        LinearLayout filters = new LinearLayout(this);
+        for (int i = 0; i < Renderer.FILTER_NAMES.length; i++) {
+            final int fi = i;
+            TextView t = Ui.pillButton(this, Renderer.FILTER_NAMES[i], 0xFFE1BEE7, 0xFF4A148C,
+                    new View.OnClickListener() { public void onClick(View v) { e.filter = fi; editor.edited(); } });
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.setMargins(Ui.dp(this, 3), 0, Ui.dp(this, 3), 0);
+            filters.addView(t, lp);
+        }
+        HorizontalScrollView fhs = new HorizontalScrollView(this); fhs.addView(filters);
+        box.addView(fhs);
         addSectionTitle(box, "עיגול פינות");
         box.addView(slider(0, (int) (Math.min(e.w, e.h) / 2), (int) e.corner, new IntConsumer() {
             public void accept(int v) { e.corner = v; editor.edited(); }

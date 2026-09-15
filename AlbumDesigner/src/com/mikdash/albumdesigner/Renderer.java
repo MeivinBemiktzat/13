@@ -26,6 +26,36 @@ public final class Renderer {
         Bitmap get(String uri);
     }
 
+    public static final String[] FILTER_NAMES = {
+            "מקורי", "שחור-לבן", "ספיה", "חמים", "קריר", "בהיר", "ניגודיות", "וינטג'", "דהוי"
+    };
+
+    private static android.graphics.ColorMatrixColorFilter filterFor(int f) {
+        android.graphics.ColorMatrix m = new android.graphics.ColorMatrix();
+        switch (f) {
+            case 1: m.setSaturation(0f); break;
+            case 2: m.setSaturation(0f);
+                android.graphics.ColorMatrix s = new android.graphics.ColorMatrix(new float[]{
+                        1.07f,0,0,0,20, 0,0.94f,0,0,10, 0,0,0.62f,0,-10, 0,0,0,1,0}); m.postConcat(s); break;
+            case 3: m.postConcat(new android.graphics.ColorMatrix(new float[]{
+                    1.12f,0,0,0,12, 0,1.02f,0,0,4, 0,0,0.9f,0,0, 0,0,0,1,0})); break;
+            case 4: m.postConcat(new android.graphics.ColorMatrix(new float[]{
+                    0.9f,0,0,0,0, 0,1.0f,0,0,4, 0,0,1.15f,0,12, 0,0,0,1,0})); break;
+            case 5: m.postConcat(new android.graphics.ColorMatrix(new float[]{
+                    1.15f,0,0,0,25, 0,1.15f,0,0,25, 0,0,1.15f,0,25, 0,0,0,1,0})); break;
+            case 6: m.postConcat(new android.graphics.ColorMatrix(new float[]{
+                    1.35f,0,0,0,-40, 0,1.35f,0,0,-40, 0,0,1.35f,0,-40, 0,0,0,1,0})); break;
+            case 7: m.setSaturation(0.7f);
+                m.postConcat(new android.graphics.ColorMatrix(new float[]{
+                        1.0f,0,0,0,10, 0,0.95f,0,0,5, 0,0,0.8f,0,10, 0,0,0,1,0})); break;
+            case 8: m.setSaturation(0.55f);
+                m.postConcat(new android.graphics.ColorMatrix(new float[]{
+                        1.0f,0,0,0,30, 0,1.0f,0,0,30, 0,0,1.0f,0,30, 0,0,0,0.92f,0})); break;
+            default: return null;
+        }
+        return new android.graphics.ColorMatrixColorFilter(m);
+    }
+
     private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final Paint bmpPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final RectF r = new RectF();
@@ -75,7 +105,9 @@ public final class Renderer {
         Bitmap b = img != null && e.uri != null ? img.get(e.uri) : null;
         if (b != null) {
             bmpPaint.setAlpha(alpha);
+            bmpPaint.setColorFilter(filterFor(e.filter));
             drawCoverBitmap(c, b, e.x, e.y, e.w, e.h, e.photoScale, e.photoDx, e.photoDy);
+            bmpPaint.setColorFilter(null);
         } else {
             p.setShader(null);
             p.setStyle(Paint.Style.FILL);

@@ -46,6 +46,7 @@ public final class Model {
         public float corner = 0f;     // corner radius (page px)
         public float borderW = 0f;
         public int borderColor = 0xFFFFFFFF;
+        public int filter = 0;        // photo filter, see Renderer.FILTER_*
 
         // text
         public String text = "";
@@ -72,7 +73,7 @@ public final class Model {
             e.kind = kind; e.x = x + 24; e.y = y + 24; e.w = w; e.h = h;
             e.rotation = rotation; e.alpha = alpha;
             e.uri = uri; e.photoScale = photoScale; e.photoDx = photoDx; e.photoDy = photoDy;
-            e.corner = corner; e.borderW = borderW; e.borderColor = borderColor;
+            e.corner = corner; e.borderW = borderW; e.borderColor = borderColor; e.filter = filter;
             e.text = text; e.textColor = textColor; e.textSize = textSize; e.font = font;
             e.bold = bold; e.italic = italic; e.underline = underline; e.align = align;
             e.shadow = shadow; e.bgBox = bgBox; e.letterSpacing = letterSpacing;
@@ -87,7 +88,7 @@ public final class Model {
             o.put("r", rotation); o.put("a", alpha);
             if (uri != null) o.put("uri", uri);
             o.put("ps", photoScale); o.put("pdx", photoDx); o.put("pdy", photoDy);
-            o.put("cr", corner); o.put("bw", borderW); o.put("bc", borderColor);
+            o.put("cr", corner); o.put("bw", borderW); o.put("bc", borderColor); o.put("flt", filter);
             o.put("t", text); o.put("tc", textColor); o.put("ts", textSize); o.put("fn", font);
             o.put("b", bold); o.put("i", italic); o.put("u", underline); o.put("al", align);
             o.put("sh", shadow); o.put("bx", bgBox); o.put("ls", letterSpacing);
@@ -105,7 +106,7 @@ public final class Model {
             e.photoScale = (float) o.optDouble("ps", 1); e.photoDx = (float) o.optDouble("pdx", 0);
             e.photoDy = (float) o.optDouble("pdy", 0);
             e.corner = (float) o.optDouble("cr", 0); e.borderW = (float) o.optDouble("bw", 0);
-            e.borderColor = o.optInt("bc", 0xFFFFFFFF);
+            e.borderColor = o.optInt("bc", 0xFFFFFFFF); e.filter = o.optInt("flt", 0);
             e.text = o.optString("t", ""); e.textColor = o.optInt("tc", 0xFF222222);
             e.textSize = (float) o.optDouble("ts", 60); e.font = o.optInt("fn", 0);
             e.bold = o.optBoolean("b"); e.italic = o.optBoolean("i"); e.underline = o.optBoolean("u");
