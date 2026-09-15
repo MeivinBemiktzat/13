@@ -30,6 +30,27 @@ public final class Renderer {
             "מקורי", "שחור-לבן", "ספיה", "חמים", "קריר", "בהיר", "ניגודיות", "וינטג'", "דהוי"
     };
 
+    /** Combines the named filter with per-photo brightness/contrast/saturation. */
+    private static android.graphics.ColorMatrixColorFilter colorFilterFor(Model.El e) {
+        android.graphics.ColorMatrix m = new android.graphics.ColorMatrix();
+        android.graphics.ColorMatrixColorFilter base = filterFor(e.filter);
+        boolean any = false;
+        if (base != null) { m.set(baseMatrix); any = true; }
+        if (e.saturation != 1f) {
+            android.graphics.ColorMatrix s = new android.graphics.ColorMatrix();
+            s.setSaturation(e.saturation); m.postConcat(s); any = true;
+        }
+        if (e.contrast != 1f || e.bright != 0f) {
+            float c = e.contrast, t = (-0.5f * c + 0.5f) * 255f + e.bright;
+            m.postConcat(new android.graphics.ColorMatrix(new float[]{
+                    c,0,0,0,t, 0,c,0,0,t, 0,0,c,0,t, 0,0,0,1,0})); any = true;
+        }
+        if (!any) return null;
+        return new android.graphics.ColorMatrixColorFilter(m);
+    }
+
+    private static float[] baseMatrix; // captured last filter matrix
+
     private static android.graphics.ColorMatrixColorFilter filterFor(int f) {
         android.graphics.ColorMatrix m = new android.graphics.ColorMatrix();
         switch (f) {
@@ -53,6 +74,7 @@ public final class Renderer {
                         1.0f,0,0,0,30, 0,1.0f,0,0,30, 0,0,1.0f,0,30, 0,0,0,0.92f,0})); break;
             default: return null;
         }
+        baseMatrix = m.getArray();
         return new android.graphics.ColorMatrixColorFilter(m);
     }
 
@@ -120,6 +142,8 @@ public final class Renderer {
         clipPaint.reset();
         clipPaint.setAntiAlias(true);
         clipPaint.setAlpha(alpha);
+        if (e.dropShadow)
+            clipPaint.setShadowLayer(Math.min(e.w, e.h) * 0.05f, Math.min(e.w, e.h) * 0.02f, Math.min(e.w, e.h) * 0.02f, e.shadowColor);
         Clipart.draw(c, e.clipId, e.x, e.y, e.w, e.h, clipPaint, e.fillColor, e.clipColor2);
     }
 
@@ -129,12 +153,21 @@ public final class Renderer {
         Path clip = new Path();
         clip.addRoundRect(r, e.corner, e.corner, Path.Direction.CW);
         final float px = r.left, py = r.top, pw = r.width(), ph = r.height();
+        if (e.dropShadow && e.frameStyle == 0) {
+            float rad = Math.min(pw, ph) * 0.05f, off = Math.min(pw, ph) * 0.025f;
+            p.setShader(null); p.setStyle(Paint.Style.FILL); p.setColor(e.shadowColor);
+            p.setMaskFilter(new android.graphics.BlurMaskFilter(rad, android.graphics.BlurMaskFilter.Blur.NORMAL));
+            r.set(px + off, py + off, px + pw + off, py + ph + off);
+            c.drawRoundRect(r, e.corner, e.corner, p);
+            p.setMaskFilter(null);
+            r.set(px, py, px + pw, py + ph);
+        }
         c.save();
         c.clipPath(clip);
         Bitmap b = img != null && e.uri != null ? img.get(e.uri) : null;
         if (b != null) {
             bmpPaint.setAlpha(alpha);
-            bmpPaint.setColorFilter(filterFor(e.filter));
+            bmpPaint.setColorFilter(colorFilterFor(e));
             drawCoverBitmap(c, b, px, py, pw, ph, e.photoScale, e.photoDx, e.photoDy);
             bmpPaint.setColorFilter(null);
         } else {
@@ -189,13 +222,17 @@ public final class Renderer {
         tp.setTypeface(Palette.font(e.font, e.bold, e.italic));
         tp.setUnderlineText(e.underline);
         if (e.letterSpacing != 0) try { tp.setLetterSpacing(e.letterSpacing); } catch (Throwable ignored) {}
-        if (e.shadow == 1) tp.setShadowLayer(e.textSize * 0.08f, 0, e.textSize * 0.05f, 0x88000000);
+        if (e.dropShadow) tp.setShadowLayer(e.textSize * 0.14f, e.textSize * 0.05f, e.textSize * 0.05f, e.shadowColor);
+        else if (e.shadow == 1) tp.setShadowLayer(e.textSize * 0.08f, 0, e.textSize * 0.05f, 0x88000000);
+
+        if (e.curve != 0) { drawCurvedText(c, e, tp, alpha); return; }
+
         Layout.Alignment al = e.align == Model.ALIGN_LEFT ? Layout.Alignment.ALIGN_OPPOSITE
                 : e.align == Model.ALIGN_RIGHT ? Layout.Alignment.ALIGN_NORMAL
                 : Layout.Alignment.ALIGN_CENTER;
         int width = Math.max(1, (int) e.w);
-        StaticLayout sl = new StaticLayout(e.text == null ? "" : e.text, tp, width,
-                al, 1.0f, 0.0f, false);
+        String text = e.text == null ? "" : e.text;
+        StaticLayout sl = new StaticLayout(text, tp, width, al, 1.0f, 0.0f, false);
         float th = sl.getHeight();
         c.save();
         if (e.bgBox != 0) {
@@ -207,8 +244,42 @@ public final class Renderer {
             p.setAlpha(255);
         }
         c.translate(e.x, e.y + (e.h - th) / 2);
+        if (e.outlineW > 0) {
+            TextPaint op = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+            op.setTextSize(e.textSize); op.setTypeface(tp.getTypeface());
+            if (e.letterSpacing != 0) try { op.setLetterSpacing(e.letterSpacing); } catch (Throwable ignored) {}
+            op.setStyle(Paint.Style.STROKE); op.setStrokeWidth(e.outlineW);
+            op.setStrokeJoin(Paint.Join.ROUND); op.setColor(e.outlineColor); op.setAlpha(alpha);
+            new StaticLayout(text, op, width, al, 1.0f, 0.0f, false).draw(c);
+        }
+        if (e.textGrad) {
+            tp.setShader(new LinearGradient(0, 0, 0, th, e.textColor, e.textColor2, Shader.TileMode.CLAMP));
+            tp.setAlpha(alpha);
+        }
         sl.draw(c);
         c.restore();
+    }
+
+    private void drawCurvedText(Canvas c, Model.El e, TextPaint tp, int alpha) {
+        String text = e.text == null ? "" : e.text.replace("\n", " ");
+        float sweep = Math.max(-300, Math.min(300, e.curve));
+        float aSweep = Math.abs(sweep);
+        float rad = (float) ((e.w / 2f) / Math.max(0.06, Math.sin(Math.toRadians(Math.min(178, aSweep) / 2f))));
+        float cx = e.x + e.w / 2f, cy;
+        Path path = new Path();
+        if (sweep > 0) { cy = e.y + e.h / 2f + rad; path.addArc(new RectF(cx - rad, cy - rad, cx + rad, cy + rad), 270 - aSweep / 2f, aSweep); }
+        else { cy = e.y + e.h / 2f - rad; path.addArc(new RectF(cx - rad, cy - rad, cx + rad, cy + rad), 90 + aSweep / 2f, -aSweep); }
+        tp.setTextAlign(Paint.Align.CENTER);
+        float vOff = e.textSize * 0.35f;
+        if (e.outlineW > 0) {
+            TextPaint op = new TextPaint(tp);
+            op.setStyle(Paint.Style.STROKE); op.setStrokeWidth(e.outlineW);
+            op.setStrokeJoin(Paint.Join.ROUND); op.setColor(e.outlineColor); op.setShader(null); op.setAlpha(alpha);
+            c.drawTextOnPath(text, path, 0, vOff, op);
+        }
+        if (e.textGrad) tp.setShader(new LinearGradient(e.x, e.y, e.x + e.w, e.y, e.textColor, e.textColor2, Shader.TileMode.CLAMP));
+        tp.setAlpha(alpha);
+        c.drawTextOnPath(text, path, 0, vOff, tp);
     }
 
     private void drawSticker(Canvas c, Model.El e, int alpha) {
@@ -219,10 +290,12 @@ public final class Renderer {
         p.setTextAlign(Paint.Align.CENTER);
         p.setTypeface(Typeface.DEFAULT);
         float size = Math.min(e.w, e.h);
+        if (e.dropShadow) p.setShadowLayer(size * 0.06f, size * 0.03f, size * 0.03f, e.shadowColor);
         p.setTextSize(size * 0.86f);
         Paint.FontMetrics fm = p.getFontMetrics();
         float baseline = e.y + e.h / 2 - (fm.ascent + fm.descent) / 2;
         c.drawText(e.emoji == null ? "★" : e.emoji, e.x + e.w / 2, baseline, p);
+        p.clearShadowLayer();
         p.setTextAlign(Paint.Align.LEFT);
         p.setAlpha(255);
     }
@@ -232,6 +305,7 @@ public final class Renderer {
         p.setStyle(Paint.Style.FILL);
         p.setColor(e.fillColor);
         p.setAlpha(Color.alpha(e.fillColor) * alpha / 255);
+        if (e.dropShadow) p.setShadowLayer(Math.min(e.w, e.h) * 0.05f, Math.min(e.w, e.h) * 0.02f, Math.min(e.w, e.h) * 0.02f, e.shadowColor);
         Path path = shapePath(e);
         if (e.shapeType == Model.SHAPE_LINE) {
             p.setStyle(Paint.Style.STROKE);
@@ -249,6 +323,7 @@ public final class Renderer {
             p.setAlpha(Color.alpha(e.strokeColor) * alpha / 255);
             c.drawPath(path, p);
         }
+        p.clearShadowLayer();
         p.setAlpha(255);
         p.setStyle(Paint.Style.FILL);
     }

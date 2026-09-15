@@ -38,6 +38,8 @@ public class EditorView extends View {
     private float lastX, lastY;
     private float startDist, startAngle, startW, startH, startRot;
     private float handlePx;
+    private boolean hasGuideX, hasGuideY;
+    private float guideX, guideY;
 
     public EditorView(Context c) {
         super(c);
@@ -123,6 +125,13 @@ public class EditorView extends View {
         renderer.drawPage(c, page, pw, ph, images);
         c.restore();
 
+        if (hasGuideX || hasGuideY) {
+            chrome.setColor(0xFFFF1493);
+            chrome.setStrokeWidth(2);
+            chrome.setStyle(Paint.Style.STROKE);
+            if (hasGuideX) { float gx = offX + guideX * scale; c.drawLine(gx, offY, gx, offY + ph * scale, chrome); }
+            if (hasGuideY) { float gy = offY + guideY * scale; c.drawLine(offX, gy, offX + pw * scale, gy, chrome); }
+        }
         if (selected != null) drawSelection(c);
     }
 
@@ -217,6 +226,7 @@ public class EditorView extends View {
                     float dx = (x - lastX) / scale, dy = (y - lastY) / scale;
                     selected.x += dx; selected.y += dy;
                     lastX = x; lastY = y;
+                    applySnap();
                     edited();
                 } else if (mode == MODE_RESIZE) {
                     float cx = selected.x + selected.w / 2, cy = selected.y + selected.h / 2;
@@ -242,9 +252,34 @@ public class EditorView extends View {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 mode = MODE_NONE;
+                hasGuideX = hasGuideY = false;
+                invalidate();
                 return true;
         }
         return true;
+    }
+
+    private void applySnap() {
+        Model.El e = selected;
+        float thr = 12f / scale;
+        int pw = project.pw(), ph = project.ph();
+        // candidate target lines
+        java.util.ArrayList<Float> tx = new java.util.ArrayList<>(), ty = new java.util.ArrayList<>();
+        tx.add(pw / 2f); tx.add(0f); tx.add((float) pw);
+        ty.add(ph / 2f); ty.add(0f); ty.add((float) ph);
+        for (Model.El o : page.els) {
+            if (o == e) continue;
+            tx.add(o.x); tx.add(o.x + o.w / 2); tx.add(o.x + o.w);
+            ty.add(o.y); ty.add(o.y + o.h / 2); ty.add(o.y + o.h);
+        }
+        hasGuideX = hasGuideY = false;
+        float[] ax = {e.x, e.x + e.w / 2, e.x + e.w};
+        float bestX = thr; float snapDx = 0;
+        for (float a : ax) for (float t : tx) { float d = Math.abs(a - t); if (d < bestX) { bestX = d; snapDx = t - a; guideX = t; hasGuideX = true; } }
+        float[] ay = {e.y, e.y + e.h / 2, e.y + e.h};
+        float bestY = thr; float snapDy = 0;
+        for (float a : ay) for (float t : ty) { float d = Math.abs(a - t); if (d < bestY) { bestY = d; snapDy = t - a; guideY = t; hasGuideY = true; } }
+        e.x += snapDx; e.y += snapDy;
     }
 
     private boolean hitHandles(float x, float y) {

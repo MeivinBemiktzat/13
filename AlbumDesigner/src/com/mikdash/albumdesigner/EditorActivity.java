@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -451,6 +452,10 @@ public class EditorActivity extends Activity implements EditorView.Listener {
         box.addView(swatchRow(Palette.COLORS, new IntConsumer() { public void accept(int c) { e.fillColor = c; editor.edited(); } }));
         addSectionTitle(box, "צבע משני");
         box.addView(swatchRow(Palette.COLORS, new IntConsumer() { public void accept(int c) { e.clipColor2 = c; editor.edited(); } }));
+        addSectionTitle(box, "אפקטים");
+        LinearLayout cfx = new LinearLayout(this);
+        cfx.addView(toggle("צל", e.dropShadow, new BoolConsumer() { public void accept(boolean b) { e.dropShadow = b; editor.edited(); } }));
+        box.addView(cfx);
         showSheet("עריכת איור", box);
     }
 
@@ -538,35 +543,95 @@ public class EditorActivity extends Activity implements EditorView.Listener {
         showSheet("רקע העמוד", box);
     }
 
+    private interface BmpProvider { Bitmap get(int i); }
+
+    private Bitmap renderPagePreview(Model.Page pg, int longEdge) {
+        int pw = project.pw(), ph = project.ph();
+        float s = (float) longEdge / Math.max(pw, ph);
+        int w = Math.max(1, Math.round(pw * s)), h = Math.max(1, Math.round(ph * s));
+        Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(bmp);
+        cv.drawColor(0xFFFFFFFF);
+        cv.scale((float) w / pw, (float) h / ph);
+        new Renderer().drawPage(cv, pg, pw, ph, null);
+        return bmp;
+    }
+
+    private void showPreviewGrid(String title, final int count, final int cols,
+                                 final BmpProvider provider, final String[] labels, final IntConsumer onPick) {
+        final android.widget.GridView grid = new android.widget.GridView(this);
+        grid.setNumColumns(cols);
+        grid.setVerticalSpacing(Ui.dp(this, 8));
+        grid.setHorizontalSpacing(Ui.dp(this, 8));
+        int pad = Ui.dp(this, 10);
+        grid.setPadding(pad, pad, pad, pad);
+        final Bitmap[] cache = new Bitmap[count];
+        grid.setAdapter(new android.widget.BaseAdapter() {
+            public int getCount() { return count; }
+            public Object getItem(int i) { return i; }
+            public long getItemId(int i) { return i; }
+            public View getView(final int i, View cv, ViewGroup parent) {
+                LinearLayout cell = new LinearLayout(EditorActivity.this);
+                cell.setOrientation(LinearLayout.VERTICAL);
+                cell.setGravity(Gravity.CENTER);
+                ImageView iv = new ImageView(EditorActivity.this);
+                iv.setLayoutParams(new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(EditorActivity.this, 150)));
+                iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                iv.setBackground(Ui.roundBg(0xFFF3EEF9, 8, EditorActivity.this));
+                if (cache[i] == null) try { cache[i] = provider.get(i); } catch (Throwable ignored) {}
+                iv.setImageBitmap(cache[i]);
+                cell.addView(iv);
+                if (labels != null) {
+                    TextView t = new TextView(EditorActivity.this);
+                    t.setText(labels[i]); t.setTextSize(11); t.setGravity(Gravity.CENTER);
+                    t.setTextColor(0xFF555555); t.setPadding(0, Ui.dp(EditorActivity.this, 3), 0, 0);
+                    cell.addView(t);
+                }
+                return cell;
+            }
+        });
+        final AlertDialog dlg = new AlertDialog.Builder(this).setTitle(title).setView(grid)
+                .setNegativeButton("סגור", null).create();
+        grid.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
+            public void onItemClick(android.widget.AdapterView<?> pr, View v, int pos, long id) {
+                onPick.accept(pos); dlg.dismiss();
+            }
+        });
+        dlg.show();
+    }
+
     private void themeDialog() {
-        new AlertDialog.Builder(this).setTitle("תבניות עיצוב מוכנות")
-                .setItems(Templates.THEME_NAMES, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface d, int w) {
-                        pushUndo();
-                        Model.Page pg = Templates.theme(w, project.pw(), project.ph());
-                        project.pages.set(pageIndex, pg);
-                        editor.bind(project, pg);
-                        Toast.makeText(EditorActivity.this, "הוחלה תבנית · הוסיפו תמונות במסגרות", Toast.LENGTH_SHORT).show();
-                    }
-                }).show();
+        showPreviewGrid("תבניות עיצוב מוכנות", Templates.THEME_NAMES.length, 2,
+                new BmpProvider() { public Bitmap get(int i) { return renderPagePreview(Templates.theme(i, project.pw(), project.ph()), 320); } },
+                Templates.THEME_NAMES,
+                new IntConsumer() { public void accept(int i) {
+                    pushUndo();
+                    Model.Page pg = Templates.theme(i, project.pw(), project.ph());
+                    project.pages.set(pageIndex, pg);
+                    editor.bind(project, pg);
+                    Toast.makeText(EditorActivity.this, "הוחלה תבנית · הוסיפו תמונות במסגרות", Toast.LENGTH_SHORT).show();
+                } });
     }
 
     private void layoutDialog() {
-        new AlertDialog.Builder(this).setTitle("פריסת תמונות")
-                .setItems(Templates.LAYOUT_NAMES, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface d, int w) {
-                        pushUndo();
-                        Model.Page pg = editor.getPage();
-                        // remove existing empty photo frames, keep filled photos & decorations
-                        for (int i = pg.els.size() - 1; i >= 0; i--) {
-                            Model.El e = pg.els.get(i);
-                            if (e.kind == Model.KIND_PHOTO && e.uri == null) pg.els.remove(i);
-                        }
-                        java.util.List<Model.El> frames = Templates.layout(w, project.pw(), project.ph());
-                        pg.els.addAll(0, frames);
-                        editor.bind(project, pg);
+        showPreviewGrid("פריסת תמונות", Templates.LAYOUT_NAMES.length, 3,
+                new BmpProvider() { public Bitmap get(int i) {
+                    Model.Page pg = new Model.Page(); pg.bgColor = 0xFFF0F0F0;
+                    pg.els.addAll(Templates.layout(i, project.pw(), project.ph()));
+                    return renderPagePreview(pg, 300);
+                } },
+                Templates.LAYOUT_NAMES,
+                new IntConsumer() { public void accept(int w) {
+                    pushUndo();
+                    Model.Page pg = editor.getPage();
+                    for (int i = pg.els.size() - 1; i >= 0; i--) {
+                        Model.El e = pg.els.get(i);
+                        if (e.kind == Model.KIND_PHOTO && e.uri == null) pg.els.remove(i);
                     }
-                }).show();
+                    pg.els.addAll(0, Templates.layout(w, project.pw(), project.ph()));
+                    editor.bind(project, pg);
+                } });
     }
 
     /* --------------------- per-element editing ------------------------- */
@@ -628,7 +693,22 @@ public class EditorActivity extends Activity implements EditorView.Listener {
         al.addView(Ui.pillButton(this, "שמאל", 0xFFE1BEE7, 0xFF4A148C, alignClick(e, Model.ALIGN_LEFT)));
         box.addView(al);
 
-        new AlertDialog.Builder(this).setTitle("עריכת טקסט")
+        addSectionTitle(box, "מילוי גרדיאנט");
+        LinearLayout grad = new LinearLayout(this);
+        grad.addView(toggle("גרדיאנט", e.textGrad, new BoolConsumer() { public void accept(boolean b) { e.textGrad = b; editor.edited(); } }));
+        box.addView(grad);
+        box.addView(swatchRow(Palette.COLORS, new IntConsumer() { public void accept(int c) { e.textColor2 = c; e.textGrad = true; editor.edited(); } }));
+        addSectionTitle(box, "קו מתאר (עובי)");
+        box.addView(slider(0, 40, (int) e.outlineW, new IntConsumer() { public void accept(int v) { e.outlineW = v; editor.edited(); } }));
+        box.addView(swatchRow(Palette.COLORS, new IntConsumer() { public void accept(int c) { e.outlineColor = c; if (e.outlineW == 0) e.outlineW = 8; editor.edited(); } }));
+        addSectionTitle(box, "עיקול הטקסט (קשת)");
+        box.addView(slider(-200, 200, (int) e.curve, new IntConsumer() { public void accept(int v) { e.curve = v; editor.edited(); } }));
+        addSectionTitle(box, "אפקטים");
+        LinearLayout fx = new LinearLayout(this);
+        fx.addView(toggle("צל", e.dropShadow, new BoolConsumer() { public void accept(boolean b) { e.dropShadow = b; editor.edited(); } }));
+        box.addView(fx);
+
+        new AlertDialog.Builder(this).setTitle("עריכת טקסט · Word-Art")
                 .setView(wrapScroll(box))
                 .setPositiveButton("אישור", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface d, int w) { e.text = et.getText().toString(); editor.edited(); }
@@ -698,6 +778,16 @@ public class EditorActivity extends Activity implements EditorView.Listener {
         box.addView(slider(100, 300, (int) (e.photoScale * 100), new IntConsumer() {
             public void accept(int v) { e.photoScale = v / 100f; editor.edited(); }
         }));
+        addSectionTitle(box, "בהירות");
+        box.addView(slider(-100, 100, (int) e.bright, new IntConsumer() { public void accept(int v) { e.bright = v; editor.edited(); } }));
+        addSectionTitle(box, "ניגודיות");
+        box.addView(slider(40, 220, (int) (e.contrast * 100), new IntConsumer() { public void accept(int v) { e.contrast = v / 100f; editor.edited(); } }));
+        addSectionTitle(box, "רוויה");
+        box.addView(slider(0, 200, (int) (e.saturation * 100), new IntConsumer() { public void accept(int v) { e.saturation = v / 100f; editor.edited(); } }));
+        addSectionTitle(box, "אפקטים");
+        LinearLayout pfx = new LinearLayout(this);
+        pfx.addView(toggle("צל מוטל", e.dropShadow, new BoolConsumer() { public void accept(boolean b) { e.dropShadow = b; editor.edited(); } }));
+        box.addView(pfx);
         showSheet("עריכת תמונה", box);
     }
 
@@ -716,6 +806,10 @@ public class EditorActivity extends Activity implements EditorView.Listener {
         box.addView(slider(0, 60, (int) e.strokeW, new IntConsumer() {
             public void accept(int v) { e.strokeW = v; editor.edited(); }
         }));
+        addSectionTitle(box, "אפקטים");
+        LinearLayout sfx = new LinearLayout(this);
+        sfx.addView(toggle("צל", e.dropShadow, new BoolConsumer() { public void accept(boolean b) { e.dropShadow = b; editor.edited(); } }));
+        box.addView(sfx);
         showSheet("עריכת צורה", box);
     }
 

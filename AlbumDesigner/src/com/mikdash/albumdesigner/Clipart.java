@@ -23,12 +23,18 @@ public final class Clipart {
             "פינה מעוטרת", "מפריד", "חץ", "מרכאות",                  // 36-39
             "מצלמה", "מטוס", "סיכת מיקום", "מצפן", "מזוודה",         // 40-44 travel
             "כוס קפה", "תו מוזיקה", "פרפר", "יונה", "כף רגל תינוק",  // 45-49
+            "חתול", "כלב", "ציפור", "דג", "ארנב", "דבורה", "חד-קרן", "ינשוף", // 50-57 animals
+            "קאפקייק", "גלידה", "דונאט", "תפוח", "דובדבן", "אבטיח", "פיצה",   // 58-64 food
+            "מגן דוד", "מנורה", "סביבון", "רימון", "ענבים", "נרות שבת", "ספר", // 65-71 holidays
+            "בית", "סמיילי", "משקפי שמש", "שפתיים", "מפתח", "שעון",           // 72-77 objects
+            "עיפרון", "פלטה", "רקטה", "מטרייה", "ברק", "יהלום", "אינסוף", "וי", "שבתאי", // 78-86 symbols
     };
 
     // Category ranges for the tabbed picker: {label, startInclusive, endExclusive}
     public static final Object[][] CATEGORIES = {
             {"אהבה", 0, 4}, {"פרחים", 4, 10}, {"טבע", 10, 16}, {"שמיים", 16, 23},
-            {"חגיגה", 23, 32}, {"קישוט", 32, 40}, {"אובייקטים", 40, 50},
+            {"חגיגה", 23, 32}, {"קישוט", 32, 40}, {"נסיעות", 40, 50},
+            {"חיות", 50, 58}, {"אוכל", 58, 65}, {"חגים", 65, 72}, {"סמלים", 72, 87},
     };
 
     public static void draw(Canvas g, int id, float x, float y, float w, float h,
@@ -91,8 +97,298 @@ public final class Clipart {
             case 47: butterfly(g, p, c1, c2); break;
             case 48: dove(g, p, c1, c2); break;
             case 49: footprint(g, p, c1); break;
+            case 50: cat(g, p, c1, c2); break;
+            case 51: dog(g, p, c1, c2); break;
+            case 52: bird(g, p, c1, c2); break;
+            case 53: fish(g, p, c1, c2); break;
+            case 54: rabbit(g, p, c1, c2); break;
+            case 55: bee(g, p, c1, c2); break;
+            case 56: unicorn(g, p, c1, c2); break;
+            case 57: owl(g, p, c1, c2); break;
+            case 58: cupcake(g, p, c1, c2); break;
+            case 59: iceCream(g, p, c1, c2); break;
+            case 60: donut(g, p, c1, c2); break;
+            case 61: apple(g, p, c1, c2); break;
+            case 62: cherry(g, p, c1, c2); break;
+            case 63: watermelon(g, p, c1, c2); break;
+            case 64: pizza(g, p, c1, c2); break;
+            case 65: starOfDavid(g, p, c1); break;
+            case 66: menorah(g, p, c1, c2); break;
+            case 67: dreidel(g, p, c1, c2); break;
+            case 68: pomegranate(g, p, c1, c2); break;
+            case 69: grapes(g, p, c1, c2); break;
+            case 70: shabbatCandles(g, p, c1, c2); break;
+            case 71: book(g, p, c1, c2); break;
+            case 72: house(g, p, c1, c2); break;
+            case 73: smiley(g, p, c1); break;
+            case 74: sunglasses(g, p, c1); break;
+            case 75: lips(g, p, c1); break;
+            case 76: key(g, p, c1); break;
+            case 77: clock(g, p, c1, c2); break;
+            case 78: pencil(g, p, c1, c2); break;
+            case 79: palette(g, p, c1, c2); break;
+            case 80: rocket(g, p, c1, c2); break;
+            case 81: umbrella(g, p, c1, c2); break;
+            case 82: bolt(g, p, c1); break;
+            case 83: gem(g, p, c1, c2); break;
+            case 84: infinity(g, p, c1); break;
+            case 85: check(g, p, c1); break;
+            case 86: saturn(g, p, c1, c2); break;
             default: heart(g, p, c1);
         }
+        g.restore();
+    }
+
+    /* ------------------------- extra set ------------------------------- */
+
+    private static void cat(Canvas g, Paint p, int c1, int c2) {
+        circle(g, p, 0.5f, 0.55f, 0.34f, c1);
+        Path e1 = P(); e1.moveTo(0.24f, 0.36f); e1.lineTo(0.30f, 0.10f); e1.lineTo(0.44f, 0.30f); e1.close(); fill(g, e1, p, c1);
+        Path e2 = P(); e2.moveTo(0.76f, 0.36f); e2.lineTo(0.70f, 0.10f); e2.lineTo(0.56f, 0.30f); e2.close(); fill(g, e2, p, c1);
+        circle(g, p, 0.40f, 0.52f, 0.045f, c2); circle(g, p, 0.60f, 0.52f, 0.045f, c2);
+        Path nose = P(); nose.moveTo(0.5f, 0.60f); nose.lineTo(0.54f, 0.65f); nose.lineTo(0.46f, 0.65f); nose.close(); fill(g, nose, p, c2);
+        for (int i = -1; i <= 1; i++) { Path w = P(); w.moveTo(0.44f, 0.66f + i * 0.03f); w.lineTo(0.20f, 0.64f + i * 0.05f); stroke(g, w, p, c2, 0.012f);
+            Path w2 = P(); w2.moveTo(0.56f, 0.66f + i * 0.03f); w2.lineTo(0.80f, 0.64f + i * 0.05f); stroke(g, w2, p, c2, 0.012f); }
+    }
+    private static void dog(Canvas g, Paint p, int c1, int c2) {
+        circle(g, p, 0.5f, 0.52f, 0.32f, c1);
+        Path e1 = P(); e1.addOval(new RectF(0.10f, 0.30f, 0.32f, 0.72f), Path.Direction.CW); fill(g, e1, p, c2);
+        Path e2 = P(); e2.addOval(new RectF(0.68f, 0.30f, 0.90f, 0.72f), Path.Direction.CW); fill(g, e2, p, c2);
+        circle(g, p, 0.5f, 0.56f, 0.30f, c1);
+        circle(g, p, 0.41f, 0.50f, 0.04f, 0xFF222222); circle(g, p, 0.59f, 0.50f, 0.04f, 0xFF222222);
+        circle(g, p, 0.5f, 0.62f, 0.06f, 0xFF222222);
+        Path t = P(); t.moveTo(0.5f, 0.68f); t.lineTo(0.5f, 0.80f); stroke(g, t, p, 0xFF222222, 0.02f);
+    }
+    private static void bird(Canvas g, Paint p, int c1, int c2) {
+        circle(g, p, 0.45f, 0.5f, 0.30f, c1);
+        Path wing = P(); wing.moveTo(0.45f, 0.5f); wing.quadTo(0.2f, 0.35f, 0.15f, 0.6f); wing.quadTo(0.3f, 0.62f, 0.45f, 0.5f); fill(g, wing, p, Clipart.lighten(c1));
+        circle(g, p, 0.58f, 0.42f, 0.035f, 0xFF222222);
+        Path beak = P(); beak.moveTo(0.72f, 0.48f); beak.lineTo(0.88f, 0.52f); beak.lineTo(0.72f, 0.56f); beak.close(); fill(g, beak, p, c2);
+        Path tail = P(); tail.moveTo(0.16f, 0.5f); tail.lineTo(0.02f, 0.42f); tail.lineTo(0.05f, 0.58f); tail.close(); fill(g, tail, p, c1);
+        Path leg = P(); leg.moveTo(0.45f, 0.78f); leg.lineTo(0.45f, 0.9f); stroke(g, leg, p, c2, 0.02f);
+    }
+    private static void fish(Canvas g, Paint p, int c1, int c2) {
+        Path b = P(); b.addOval(new RectF(0.12f, 0.30f, 0.74f, 0.70f), Path.Direction.CW); fill(g, b, p, c1);
+        Path tail = P(); tail.moveTo(0.72f, 0.5f); tail.lineTo(0.95f, 0.32f); tail.lineTo(0.95f, 0.68f); tail.close(); fill(g, tail, p, c1);
+        circle(g, p, 0.28f, 0.46f, 0.04f, 0xFF222222);
+        Path fin = P(); fin.moveTo(0.40f, 0.32f); fin.lineTo(0.52f, 0.16f); fin.lineTo(0.58f, 0.34f); fin.close(); fill(g, fin, p, c2);
+    }
+    private static void rabbit(Canvas g, Paint p, int c1, int c2) {
+        Path e1 = P(); e1.addOval(new RectF(0.30f, 0.02f, 0.44f, 0.46f), Path.Direction.CW); fill(g, e1, p, c1);
+        Path e2 = P(); e2.addOval(new RectF(0.56f, 0.02f, 0.70f, 0.46f), Path.Direction.CW); fill(g, e2, p, c1);
+        Path e1b = P(); e1b.addOval(new RectF(0.33f, 0.08f, 0.41f, 0.42f), Path.Direction.CW); fill(g, e1b, p, c2);
+        Path e2b = P(); e2b.addOval(new RectF(0.59f, 0.08f, 0.67f, 0.42f), Path.Direction.CW); fill(g, e2b, p, c2);
+        circle(g, p, 0.5f, 0.66f, 0.26f, c1);
+        circle(g, p, 0.42f, 0.62f, 0.03f, 0xFF222222); circle(g, p, 0.58f, 0.62f, 0.03f, 0xFF222222);
+        circle(g, p, 0.5f, 0.70f, 0.03f, c2);
+    }
+    private static void bee(Canvas g, Paint p, int c1, int c2) {
+        Path w1 = P(); w1.addOval(new RectF(0.18f, 0.18f, 0.48f, 0.44f), Path.Direction.CW); fill(g, w1, p, 0x99B3E5FC);
+        Path w2 = P(); w2.addOval(new RectF(0.52f, 0.18f, 0.82f, 0.44f), Path.Direction.CW); fill(g, w2, p, 0x99B3E5FC);
+        Path body = P(); body.addOval(new RectF(0.30f, 0.40f, 0.70f, 0.90f), Path.Direction.CW); fill(g, body, p, c1);
+        for (int i = 0; i < 3; i++) { round(g, p, 0.30f, 0.48f + i * 0.13f, 0.40f, 0.07f, 0f, c2); }
+        circle(g, p, 0.40f, 0.52f, 0.02f, 0xFF222222); circle(g, p, 0.60f, 0.52f, 0.02f, 0xFF222222);
+    }
+    private static void unicorn(Canvas g, Paint p, int c1, int c2) {
+        circle(g, p, 0.5f, 0.58f, 0.30f, c1);
+        Path horn = P(); horn.moveTo(0.44f, 0.30f); horn.lineTo(0.5f, 0.02f); horn.lineTo(0.56f, 0.30f); horn.close(); fill(g, horn, p, 0xFFFFD54F);
+        Path mane = P(); mane.moveTo(0.30f, 0.34f); mane.quadTo(0.10f, 0.5f, 0.24f, 0.78f); mane.quadTo(0.34f, 0.6f, 0.34f, 0.4f); fill(g, mane, p, c2);
+        circle(g, p, 0.58f, 0.56f, 0.035f, 0xFF222222);
+        Path e1 = P(); e1.moveTo(0.34f, 0.34f); e1.lineTo(0.30f, 0.18f); e1.lineTo(0.44f, 0.30f); e1.close(); fill(g, e1, p, c1);
+    }
+    private static void owl(Canvas g, Paint p, int c1, int c2) {
+        Path body = P(); body.addOval(new RectF(0.20f, 0.14f, 0.80f, 0.92f), Path.Direction.CW); fill(g, body, p, c1);
+        circle(g, p, 0.38f, 0.40f, 0.14f, 0xFFFFFFFF); circle(g, p, 0.62f, 0.40f, 0.14f, 0xFFFFFFFF);
+        circle(g, p, 0.38f, 0.40f, 0.06f, 0xFF222222); circle(g, p, 0.62f, 0.40f, 0.06f, 0xFF222222);
+        Path beak = P(); beak.moveTo(0.5f, 0.44f); beak.lineTo(0.56f, 0.54f); beak.lineTo(0.44f, 0.54f); beak.close(); fill(g, beak, p, c2);
+        Path e1 = P(); e1.moveTo(0.22f, 0.20f); e1.lineTo(0.30f, 0.04f); e1.lineTo(0.40f, 0.20f); e1.close(); fill(g, e1, p, c1);
+        Path e2 = P(); e2.moveTo(0.60f, 0.20f); e2.lineTo(0.70f, 0.04f); e2.lineTo(0.78f, 0.20f); e2.close(); fill(g, e2, p, c1);
+    }
+    private static void cupcake(Canvas g, Paint p, int c1, int c2) {
+        Path cup = P(); cup.moveTo(0.26f, 0.5f); cup.lineTo(0.74f, 0.5f); cup.lineTo(0.66f, 0.92f); cup.lineTo(0.34f, 0.92f); cup.close(); fill(g, cup, p, c2);
+        Path top = P(); top.addArc(new RectF(0.20f, 0.18f, 0.80f, 0.66f), 180, 180); top.close(); fill(g, top, p, c1);
+        circle(g, p, 0.5f, 0.16f, 0.06f, 0xFFEF5350);
+        for (int i = 0; i < 5; i++) round(g, p, 0.30f + i * 0.08f, 0.5f, 0.03f, 0.42f, 0f, Clipart.lighten(c2));
+    }
+    private static void iceCream(Canvas g, Paint p, int c1, int c2) {
+        Path cone = P(); cone.moveTo(0.32f, 0.5f); cone.lineTo(0.68f, 0.5f); cone.lineTo(0.5f, 0.95f); cone.close(); fill(g, cone, p, 0xFFD7A86E);
+        circle(g, p, 0.5f, 0.40f, 0.20f, c1); circle(g, p, 0.38f, 0.32f, 0.15f, c2); circle(g, p, 0.62f, 0.32f, 0.15f, Clipart.lighten(c1));
+        circle(g, p, 0.5f, 0.14f, 0.05f, 0xFFEF5350);
+    }
+    private static void donut(Canvas g, Paint p, int c1, int c2) {
+        circle(g, p, 0.5f, 0.5f, 0.42f, 0xFFD7A86E);
+        Path icing = P(); icing.addCircle(0.5f, 0.5f, 0.42f, Path.Direction.CW);
+        Path hole = P(); hole.addCircle(0.5f, 0.5f, 0.16f, Path.Direction.CW);
+        icing.op(hole, Path.Op.DIFFERENCE); fill(g, icing, p, c1);
+        circle(g, p, 0.5f, 0.5f, 0.16f, 0xFFFFFFFF);
+        int[] sp = {c2, 0xFFFFFFFF, 0xFF42A5F5, 0xFFFFCA28};
+        for (int i = 0; i < 8; i++) { double a = Math.PI * 2 * i / 8; round(g, p, 0.5f + (float) Math.cos(a) * 0.30f, 0.5f + (float) Math.sin(a) * 0.30f, 0.05f, 0.02f, 0.01f, sp[i % sp.length]); }
+    }
+    private static void apple(Canvas g, Paint p, int c1, int c2) {
+        Path a = P(); a.addOval(new RectF(0.16f, 0.22f, 0.84f, 0.94f), Path.Direction.CW); fill(g, a, p, c1);
+        round(g, p, 0.48f, 0.06f, 0.04f, 0.22f, 0.01f, 0xFF6D4C41);
+        Path leaf = P(); leaf.addOval(new RectF(0.52f, 0.08f, 0.72f, 0.20f), Path.Direction.CW); fill(g, leaf, p, c2);
+    }
+    private static void cherry(Canvas g, Paint p, int c1, int c2) {
+        circle(g, p, 0.34f, 0.72f, 0.16f, c1); circle(g, p, 0.66f, 0.74f, 0.16f, c1);
+        Path s1 = P(); s1.moveTo(0.34f, 0.58f); s1.quadTo(0.5f, 0.2f, 0.6f, 0.12f); stroke(g, s1, p, 0xFF6D4C41, 0.02f);
+        Path s2 = P(); s2.moveTo(0.66f, 0.60f); s2.quadTo(0.58f, 0.24f, 0.6f, 0.12f); stroke(g, s2, p, 0xFF6D4C41, 0.02f);
+        Path leaf = P(); leaf.addOval(new RectF(0.58f, 0.06f, 0.82f, 0.18f), Path.Direction.CW); fill(g, leaf, p, c2);
+    }
+    private static void watermelon(Canvas g, Paint p, int c1, int c2) {
+        Path slice = P(); slice.addArc(new RectF(0.05f, 0.0f, 0.95f, 1.4f), 180, 180); slice.close(); fill(g, slice, p, 0xFF4CAF50);
+        Path w = P(); w.addArc(new RectF(0.11f, 0.08f, 0.89f, 1.3f), 180, 180); w.close(); fill(g, w, p, 0xFFFFFFFF);
+        Path r2 = P(); r2.addArc(new RectF(0.16f, 0.14f, 0.84f, 1.22f), 180, 180); r2.close(); fill(g, r2, p, c1);
+        for (int i = 0; i < 5; i++) circle(g, p, 0.28f + i * 0.11f, 0.42f + (i % 2) * 0.08f, 0.022f, 0xFF222222);
+    }
+    private static void pizza(Canvas g, Paint p, int c1, int c2) {
+        Path sl = P(); sl.moveTo(0.5f, 0.05f); sl.lineTo(0.90f, 0.9f); sl.lineTo(0.10f, 0.9f); sl.close(); fill(g, sl, p, 0xFFFFCA28);
+        Path crust = P(); crust.moveTo(0.10f, 0.9f); crust.lineTo(0.90f, 0.9f); crust.lineTo(0.82f, 0.78f); crust.lineTo(0.18f, 0.78f); crust.close(); fill(g, crust, p, 0xFFD7A86E);
+        circle(g, p, 0.45f, 0.45f, 0.055f, c1); circle(g, p, 0.6f, 0.62f, 0.055f, c1); circle(g, p, 0.4f, 0.68f, 0.05f, c1);
+    }
+    private static void starOfDavid(Canvas g, Paint p, int c1) {
+        p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(0.05f); p.setColor(c1); p.setStrokeJoin(Paint.Join.MITER);
+        Path t1 = tri(0.5f, 0.10f, 0.5f); Path t2 = tri(0.5f, 0.90f, -0.5f);
+        g.drawPath(t1, p); g.drawPath(t2, p); p.setStyle(Paint.Style.FILL);
+    }
+    private static Path tri(float cx, float apexY, float dir) {
+        Path t = P(); float r = 0.4f;
+        t.moveTo(cx, apexY); t.lineTo(cx + r * 0.87f, apexY + dir * 1.2f * r); t.lineTo(cx - r * 0.87f, apexY + dir * 1.2f * r); t.close(); return t;
+    }
+    private static void menorah(Canvas g, Paint p, int c1, int c2) {
+        round(g, p, 0.48f, 0.3f, 0.04f, 0.5f, 0f, c1);
+        round(g, p, 0.30f, 0.78f, 0.40f, 0.05f, 0.02f, c1);
+        for (int i = -3; i <= 3; i++) {
+            float bx = 0.5f + i * 0.11f;
+            Path arm = P(); arm.moveTo(0.5f, 0.55f); arm.quadTo(0.5f + i * 0.06f, 0.30f, bx, 0.30f); stroke(g, arm, p, c1, 0.03f);
+            round(g, p, bx - 0.015f, 0.24f, 0.03f, 0.07f, 0f, c1);
+            Path fl = P(); fl.moveTo(bx, 0.22f); fl.quadTo(bx + 0.03f, 0.16f, bx, 0.13f); fl.quadTo(bx - 0.03f, 0.16f, bx, 0.22f); fill(g, fl, p, c2);
+        }
+    }
+    private static void dreidel(Canvas g, Paint p, int c1, int c2) {
+        Path body = P(); body.moveTo(0.28f, 0.30f); body.lineTo(0.72f, 0.30f); body.lineTo(0.72f, 0.62f); body.lineTo(0.5f, 0.88f); body.lineTo(0.28f, 0.62f); body.close(); fill(g, body, p, c1);
+        round(g, p, 0.44f, 0.12f, 0.12f, 0.18f, 0.02f, c2);
+        round(g, p, 0.47f, 0.05f, 0.06f, 0.1f, 0.01f, c1);
+        p.setColor(c2); p.setTextAlign(Paint.Align.CENTER); p.setTextSize(0.28f);
+        g.drawText("נ", 0.5f, 0.56f, p); p.setTextAlign(Paint.Align.LEFT);
+    }
+    private static void pomegranate(Canvas g, Paint p, int c1, int c2) {
+        circle(g, p, 0.5f, 0.58f, 0.34f, c1);
+        Path crown = P(); crown.moveTo(0.40f, 0.28f); crown.lineTo(0.44f, 0.10f); crown.lineTo(0.5f, 0.24f); crown.lineTo(0.56f, 0.10f); crown.lineTo(0.60f, 0.28f); crown.close(); fill(g, crown, p, c1);
+        for (int i = 0; i < 5; i++) { double a = Math.PI * 2 * i / 5 + 0.5; circle(g, p, 0.5f + (float) Math.cos(a) * 0.14f, 0.58f + (float) Math.sin(a) * 0.14f, 0.04f, c2); }
+        circle(g, p, 0.5f, 0.58f, 0.04f, c2);
+    }
+    private static void grapes(Canvas g, Paint p, int c1, int c2) {
+        float[][] pos = {{0.5f,0.35f},{0.38f,0.45f},{0.62f,0.45f},{0.30f,0.58f},{0.5f,0.55f},{0.70f,0.58f},{0.40f,0.70f},{0.60f,0.70f},{0.5f,0.82f}};
+        for (float[] q : pos) circle(g, p, q[0], q[1], 0.10f, c1);
+        Path leaf = P(); leaf.addOval(new RectF(0.54f, 0.10f, 0.80f, 0.32f), Path.Direction.CW); fill(g, leaf, p, c2);
+        Path stem = P(); stem.moveTo(0.5f, 0.30f); stem.lineTo(0.56f, 0.14f); stroke(g, stem, p, 0xFF6D4C41, 0.02f);
+    }
+    private static void shabbatCandles(Canvas g, Paint p, int c1, int c2) {
+        round(g, p, 0.30f, 0.32f, 0.08f, 0.5f, 0.01f, c1);
+        round(g, p, 0.62f, 0.32f, 0.08f, 0.5f, 0.01f, c1);
+        flameAt(g, p, c2, 0.34f, 0.26f); flameAt(g, p, c2, 0.66f, 0.26f);
+        round(g, p, 0.22f, 0.80f, 0.56f, 0.06f, 0.02f, Clipart.lighten(c1));
+    }
+    private static void flameAt(Canvas g, Paint p, int c2, float x, float y) {
+        Path fl = P(); fl.moveTo(x, y - 0.12f); fl.quadTo(x + 0.05f, y - 0.02f, x, y + 0.04f); fl.quadTo(x - 0.05f, y - 0.02f, x, y - 0.12f); fill(g, fl, p, c2);
+    }
+    private static void book(Canvas g, Paint p, int c1, int c2) {
+        round(g, p, 0.14f, 0.22f, 0.72f, 0.56f, 0.02f, c1);
+        round(g, p, 0.48f, 0.22f, 0.04f, 0.56f, 0f, Clipart.lighten(c1));
+        for (int i = 0; i < 3; i++) { round(g, p, 0.20f, 0.34f + i * 0.10f, 0.24f, 0.03f, 0.01f, c2); round(g, p, 0.56f, 0.34f + i * 0.10f, 0.24f, 0.03f, 0.01f, c2); }
+    }
+    private static void house(Canvas g, Paint p, int c1, int c2) {
+        Path roof = P(); roof.moveTo(0.5f, 0.12f); roof.lineTo(0.92f, 0.48f); roof.lineTo(0.08f, 0.48f); roof.close(); fill(g, roof, p, c2);
+        round(g, p, 0.20f, 0.48f, 0.60f, 0.44f, 0.02f, c1);
+        round(g, p, 0.44f, 0.64f, 0.16f, 0.28f, 0.01f, c2);
+        round(g, p, 0.26f, 0.56f, 0.12f, 0.12f, 0.01f, 0xFFFFF59D);
+    }
+    private static void smiley(Canvas g, Paint p, int c1) {
+        circle(g, p, 0.5f, 0.5f, 0.44f, c1);
+        circle(g, p, 0.36f, 0.42f, 0.05f, 0xFF222222); circle(g, p, 0.64f, 0.42f, 0.05f, 0xFF222222);
+        Path smile = P(); smile.addArc(new RectF(0.28f, 0.40f, 0.72f, 0.74f), 20, 140); stroke(g, smile, p, 0xFF222222, 0.04f);
+    }
+    private static void sunglasses(Canvas g, Paint p, int c1) {
+        Path l1 = P(); l1.addRoundRect(new RectF(0.10f, 0.36f, 0.44f, 0.64f), 0.06f, 0.06f, Path.Direction.CW); fill(g, l1, p, c1);
+        Path l2 = P(); l2.addRoundRect(new RectF(0.56f, 0.36f, 0.90f, 0.64f), 0.06f, 0.06f, Path.Direction.CW); fill(g, l2, p, c1);
+        Path br = P(); br.moveTo(0.44f, 0.42f); br.quadTo(0.5f, 0.36f, 0.56f, 0.42f); stroke(g, br, p, c1, 0.03f);
+    }
+    private static void lips(Canvas g, Paint p, int c1) {
+        Path pa = P(); pa.moveTo(0.5f, 0.42f);
+        pa.cubicTo(0.35f, 0.24f, 0.12f, 0.36f, 0.5f, 0.5f);
+        pa.cubicTo(0.88f, 0.36f, 0.65f, 0.24f, 0.5f, 0.42f); pa.close(); fill(g, pa, p, c1);
+        Path bot = P(); bot.moveTo(0.12f, 0.5f); bot.cubicTo(0.3f, 0.82f, 0.7f, 0.82f, 0.88f, 0.5f); bot.cubicTo(0.7f, 0.56f, 0.3f, 0.56f, 0.12f, 0.5f); bot.close(); fill(g, bot, p, c1);
+    }
+    private static void key(Canvas g, Paint p, int c1) {
+        Path ring = P(); ring.addCircle(0.28f, 0.34f, 0.18f, Path.Direction.CW);
+        Path hole = P(); hole.addCircle(0.28f, 0.34f, 0.08f, Path.Direction.CW);
+        ring.op(hole, Path.Op.DIFFERENCE); fill(g, ring, p, c1);
+        round(g, p, 0.36f, 0.44f, 0.08f, 0.44f, 0.02f, c1);
+        round(g, p, 0.44f, 0.72f, 0.14f, 0.06f, 0.01f, c1);
+        round(g, p, 0.44f, 0.82f, 0.10f, 0.06f, 0.01f, c1);
+    }
+    private static void clock(Canvas g, Paint p, int c1, int c2) {
+        circle(g, p, 0.5f, 0.5f, 0.44f, c1); circle(g, p, 0.5f, 0.5f, 0.36f, 0xFFFFFFFF);
+        Path h = P(); h.moveTo(0.5f, 0.5f); h.lineTo(0.5f, 0.26f); stroke(g, h, p, c2, 0.03f);
+        Path m = P(); m.moveTo(0.5f, 0.5f); m.lineTo(0.68f, 0.56f); stroke(g, m, p, c2, 0.03f);
+        circle(g, p, 0.5f, 0.5f, 0.03f, c2);
+    }
+    private static void pencil(Canvas g, Paint p, int c1, int c2) {
+        g.save(); g.rotate(45, 0.5f, 0.5f);
+        round(g, p, 0.30f, 0.16f, 0.40f, 0.14f, 0.01f, c1);
+        Path tip = P(); tip.moveTo(0.30f, 0.16f); tip.lineTo(0.14f, 0.23f); tip.lineTo(0.30f, 0.30f); tip.close(); fill(g, tip, p, 0xFFD7A86E);
+        Path lead = P(); lead.moveTo(0.20f, 0.20f); lead.lineTo(0.14f, 0.23f); lead.lineTo(0.20f, 0.26f); lead.close(); fill(g, lead, p, 0xFF222222);
+        round(g, p, 0.66f, 0.16f, 0.06f, 0.14f, 0.01f, c2);
+        g.restore();
+    }
+    private static void palette(Canvas g, Paint p, int c1, int c2) {
+        Path pa = P(); pa.addOval(new RectF(0.08f, 0.14f, 0.92f, 0.86f), Path.Direction.CW);
+        Path hole = P(); hole.addCircle(0.66f, 0.6f, 0.1f, Path.Direction.CW);
+        pa.op(hole, Path.Op.DIFFERENCE); fill(g, pa, p, c1);
+        int[] cs = {0xFFEF5350, 0xFFFFCA28, 0xFF66BB6A, 0xFF42A5F5, c2};
+        double[][] q = {{0.30,0.30},{0.50,0.26},{0.68,0.34},{0.30,0.54},{0.44,0.62}};
+        for (int i = 0; i < cs.length; i++) circle(g, p, (float) q[i][0], (float) q[i][1], 0.07f, cs[i]);
+    }
+    private static void rocket(Canvas g, Paint p, int c1, int c2) {
+        Path body = P(); body.moveTo(0.5f, 0.05f); body.quadTo(0.74f, 0.4f, 0.68f, 0.72f); body.lineTo(0.32f, 0.72f); body.quadTo(0.26f, 0.4f, 0.5f, 0.05f); body.close(); fill(g, body, p, c1);
+        circle(g, p, 0.5f, 0.36f, 0.09f, c2);
+        Path f1 = P(); f1.moveTo(0.32f, 0.6f); f1.lineTo(0.16f, 0.82f); f1.lineTo(0.32f, 0.78f); f1.close(); fill(g, f1, p, c2);
+        Path f2 = P(); f2.moveTo(0.68f, 0.6f); f2.lineTo(0.84f, 0.82f); f2.lineTo(0.68f, 0.78f); f2.close(); fill(g, f2, p, c2);
+        Path fire = P(); fire.moveTo(0.40f, 0.72f); fire.quadTo(0.5f, 0.98f, 0.60f, 0.72f); fill(g, fire, p, 0xFFFF7043);
+    }
+    private static void umbrella(Canvas g, Paint p, int c1, int c2) {
+        Path top = P(); top.addArc(new RectF(0.08f, 0.10f, 0.92f, 0.90f), 180, 180); top.close(); fill(g, top, p, c1);
+        for (int i = 1; i < 4; i++) { Path sc = P(); sc.addArc(new RectF(0.08f + i * 0.14f, 0.4f, 0.36f + i * 0.14f, 0.6f), 180, 180); stroke(g, sc, p, c2, 0.01f); }
+        round(g, p, 0.485f, 0.5f, 0.03f, 0.38f, 0f, c2);
+        Path hk = P(); hk.addArc(new RectF(0.38f, 0.82f, 0.5f, 0.94f), 0, 180); stroke(g, hk, p, c2, 0.03f);
+    }
+    private static void bolt(Canvas g, Paint p, int c1) {
+        Path pa = P(); pa.moveTo(0.55f, 0.05f); pa.lineTo(0.25f, 0.55f); pa.lineTo(0.45f, 0.55f); pa.lineTo(0.40f, 0.95f); pa.lineTo(0.75f, 0.40f); pa.lineTo(0.52f, 0.40f); pa.close(); fill(g, pa, p, c1);
+    }
+    private static void gem(Canvas g, Paint p, int c1, int c2) {
+        Path pa = P(); pa.moveTo(0.5f, 0.92f); pa.lineTo(0.12f, 0.36f); pa.lineTo(0.30f, 0.14f); pa.lineTo(0.70f, 0.14f); pa.lineTo(0.88f, 0.36f); pa.close(); fill(g, pa, p, c1);
+        Path top = P(); top.moveTo(0.12f, 0.36f); top.lineTo(0.88f, 0.36f); top.lineTo(0.70f, 0.14f); top.lineTo(0.30f, 0.14f); top.close(); fill(g, top, p, Clipart.lighten(c1));
+        Path f = P(); f.moveTo(0.30f, 0.14f); f.lineTo(0.5f, 0.36f); f.lineTo(0.70f, 0.14f); stroke(g, f, p, c2, 0.01f);
+        Path fb = P(); fb.moveTo(0.12f, 0.36f); fb.lineTo(0.5f, 0.92f); fb.lineTo(0.88f, 0.36f); stroke(g, fb, p, c2, 0.01f);
+    }
+    private static void infinity(Canvas g, Paint p, int c1) {
+        p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(0.10f); p.setColor(c1);
+        Path pa = P();
+        pa.addCircle(0.30f, 0.5f, 0.18f, Path.Direction.CW);
+        pa.addCircle(0.70f, 0.5f, 0.18f, Path.Direction.CCW);
+        g.drawPath(pa, p); p.setStyle(Paint.Style.FILL);
+    }
+    private static void check(Canvas g, Paint p, int c1) {
+        circle(g, p, 0.5f, 0.5f, 0.44f, c1);
+        Path v = P(); v.moveTo(0.30f, 0.52f); v.lineTo(0.45f, 0.68f); v.lineTo(0.72f, 0.34f); stroke(g, v, p, 0xFFFFFFFF, 0.07f);
+    }
+    private static void saturn(Canvas g, Paint p, int c1, int c2) {
+        g.save(); g.rotate(-18, 0.5f, 0.5f);
+        Path ring = P(); ring.addOval(new RectF(0.05f, 0.38f, 0.95f, 0.62f), Path.Direction.CW);
+        Path inner = P(); inner.addOval(new RectF(0.22f, 0.44f, 0.78f, 0.56f), Path.Direction.CW);
+        ring.op(inner, Path.Op.DIFFERENCE); fill(g, ring, p, c2);
+        circle(g, p, 0.5f, 0.5f, 0.24f, c1);
         g.restore();
     }
 

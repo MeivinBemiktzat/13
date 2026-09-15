@@ -12,6 +12,7 @@ public final class Templates {
             "תמונה 1 מלאה", "2 לרוחב", "2 לאורך", "3 טור", "3 שורה",
             "4 רשת", "קולאז' 1+2", "קולאז' 2+1", "6 רשת", "9 רשת",
             "מגזין", "פסיפס", "לב באמצע", "פוליארויד ×3",
+            "טור 4", "רשת 2×4", "פס עליון + 3", "5 מרכזי", "רשת 3×4", "רצועה תחתונה",
     };
 
     /** Returns photo-frame elements arranged for the given layout, in page coords. */
@@ -44,6 +45,16 @@ public final class Templates {
                 e.corner = Math.min(e.w, e.h) * 0.5f; out.add(e); break;
             }
             case 13: polaroids(out, pw, ph); break;
+            case 14: for (int i = 0; i < 4; i++) frame(out, m, m + i * (H + 3 * g) / 4, W, (H - 3 * g) / 4); break;
+            case 15: grid(out, m, m, W, H, g, 2, 4); break;
+            case 16: frame(out, m, m, W, (H - g) * 0.5f);
+                     for (int i = 0; i < 3; i++) frame(out, m + i * (W + 2 * g) / 3, m + (H - g) * 0.5f + g, (W - 2 * g) / 3, (H - g) * 0.5f); break;
+            case 17: frame(out, m + W * 0.28f, m + H * 0.28f, W * 0.44f, H * 0.44f);
+                     frame(out, m, m, W * 0.24f, H * 0.24f); frame(out, m + W * 0.76f, m, W * 0.24f, H * 0.24f);
+                     frame(out, m, m + H * 0.76f, W * 0.24f, H * 0.24f); frame(out, m + W * 0.76f, m + H * 0.76f, W * 0.24f, H * 0.24f); break;
+            case 18: grid(out, m, m, W, H, g, 3, 4); break;
+            case 19: frame(out, m, m, W, H * 0.7f);
+                     for (int i = 0; i < 4; i++) frame(out, m + i * (W + 3 * g) / 4, m + H * 0.7f + g, (W - 3 * g) / 4, H * 0.3f - g); break;
             default: frame(out, m, m, W, H);
         }
         return out;

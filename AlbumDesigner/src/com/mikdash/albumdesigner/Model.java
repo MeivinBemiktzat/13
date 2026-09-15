@@ -57,9 +57,23 @@ public final class Model {
         public int font = 0;          // index into Assets fonts
         public boolean bold = false, italic = false, underline = false;
         public int align = ALIGN_CENTER;
-        public int shadow = 0;        // 0 none, 1 soft
+        public int shadow = 0;        // 0 none, 1 soft (legacy text shadow)
         public int bgBox = 0;         // background pill color, 0 = none
         public float letterSpacing = 0f;
+        public boolean textGrad = false;  // gradient text fill
+        public int textColor2 = 0xFFEC407A;
+        public float outlineW = 0f;       // text outline width (page px)
+        public int outlineColor = 0xFF000000;
+        public float curve = 0f;          // text arc in degrees (0 = straight)
+
+        // generic effects (all element kinds)
+        public boolean dropShadow = false;
+        public int shadowColor = 0x66000000;
+
+        // photo adjustments
+        public float bright = 0f;         // -100..100
+        public float contrast = 1f;       // 0.4..2.2
+        public float saturation = 1f;     // 0..2
 
         // shape
         public int shapeType = SHAPE_RECT;
@@ -83,6 +97,10 @@ public final class Model {
             e.text = text; e.textColor = textColor; e.textSize = textSize; e.font = font;
             e.bold = bold; e.italic = italic; e.underline = underline; e.align = align;
             e.shadow = shadow; e.bgBox = bgBox; e.letterSpacing = letterSpacing;
+            e.textGrad = textGrad; e.textColor2 = textColor2; e.outlineW = outlineW;
+            e.outlineColor = outlineColor; e.curve = curve;
+            e.dropShadow = dropShadow; e.shadowColor = shadowColor;
+            e.bright = bright; e.contrast = contrast; e.saturation = saturation;
             e.shapeType = shapeType; e.fillColor = fillColor; e.strokeColor = strokeColor; e.strokeW = strokeW;
             e.emoji = emoji; e.frameStyle = frameStyle; e.clipId = clipId; e.clipColor2 = clipColor2;
             return e;
@@ -98,6 +116,10 @@ public final class Model {
             o.put("t", text); o.put("tc", textColor); o.put("ts", textSize); o.put("fn", font);
             o.put("b", bold); o.put("i", italic); o.put("u", underline); o.put("al", align);
             o.put("sh", shadow); o.put("bx", bgBox); o.put("ls", letterSpacing);
+            o.put("tg", textGrad); o.put("tc2", textColor2); o.put("ow", outlineW);
+            o.put("oc", outlineColor); o.put("cv", curve);
+            o.put("ds", dropShadow); o.put("shc", shadowColor);
+            o.put("br", bright); o.put("ct", contrast); o.put("sat", saturation);
             o.put("st", shapeType); o.put("fc", fillColor); o.put("sc", strokeColor); o.put("sw", strokeW);
             o.put("em", emoji); o.put("frm", frameStyle); o.put("cid", clipId); o.put("cc2", clipColor2);
             return o;
@@ -118,6 +140,12 @@ public final class Model {
             e.bold = o.optBoolean("b"); e.italic = o.optBoolean("i"); e.underline = o.optBoolean("u");
             e.align = o.optInt("al", ALIGN_CENTER); e.shadow = o.optInt("sh", 0);
             e.bgBox = o.optInt("bx", 0); e.letterSpacing = (float) o.optDouble("ls", 0);
+            e.textGrad = o.optBoolean("tg"); e.textColor2 = o.optInt("tc2", 0xFFEC407A);
+            e.outlineW = (float) o.optDouble("ow", 0); e.outlineColor = o.optInt("oc", 0xFF000000);
+            e.curve = (float) o.optDouble("cv", 0);
+            e.dropShadow = o.optBoolean("ds"); e.shadowColor = o.optInt("shc", 0x66000000);
+            e.bright = (float) o.optDouble("br", 0); e.contrast = (float) o.optDouble("ct", 1);
+            e.saturation = (float) o.optDouble("sat", 1);
             e.shapeType = o.optInt("st", 0); e.fillColor = o.optInt("fc", 0xFFEC407A);
             e.strokeColor = o.optInt("sc", 0); e.strokeW = (float) o.optDouble("sw", 0);
             e.emoji = o.optString("em", "★");
