@@ -36,6 +36,7 @@ public final class Images implements Renderer.ImageProvider {
     public void clear() { cache.evictAll(); }
 
     private InputStream open(String uri) throws Exception {
+        if (uri.startsWith("asset:///")) return ctx.getAssets().open(uri.substring("asset:///".length()));
         if (uri.startsWith("content://")) return ctx.getContentResolver().openInputStream(Uri.parse(uri));
         if (uri.startsWith("file://")) return ctx.getContentResolver().openInputStream(Uri.parse(uri));
         return new java.io.FileInputStream(uri);

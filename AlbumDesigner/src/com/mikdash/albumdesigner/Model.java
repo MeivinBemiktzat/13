@@ -21,6 +21,7 @@ public final class Model {
     public static final int KIND_SHAPE = 2;
     public static final int KIND_STICKER = 3;
     public static final int KIND_CLIP = 4;    // vector clipart / illustration
+    public static final int KIND_IMAGE = 5;   // bundled image sticker (asset PNG)
 
     public static final int SHAPE_RECT = 0;
     public static final int SHAPE_ROUND = 1;

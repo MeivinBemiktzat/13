@@ -36,6 +36,7 @@ echo "==> [2/6] aapt2 link"
   -I "$ANDROID_JAR" \
   --manifest AndroidManifest.xml \
   --java "$GEN" \
+  -A assets \
   --min-sdk-version 24 \
   --target-sdk-version 33 \
   --version-code 1 --version-name 1.0 \

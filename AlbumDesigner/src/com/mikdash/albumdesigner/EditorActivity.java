@@ -152,7 +152,7 @@ public class EditorActivity extends Activity implements EditorView.Listener {
 
         row.addView(tool("🖼", "תמונה", new Runnable() { public void run() { addPhoto(); } }));
         row.addView(tool("🅰", "טקסט", new Runnable() { public void run() { addText(); } }));
-        row.addView(tool("🌸", "איורים", new Runnable() { public void run() { clipartDialog(); } }));
+        row.addView(tool("🌸", "מדבקות", new Runnable() { public void run() { imageStickerDialog(); } }));
         row.addView(tool("⭐", "אמוג'י", new Runnable() { public void run() { stickerDialog(); } }));
         row.addView(tool("◼", "צורה", new Runnable() { public void run() { shapeDialog(); } }));
         row.addView(tool("🎨", "רקע", new Runnable() { public void run() { backgroundDialog(); } }));
@@ -354,6 +354,97 @@ public class EditorActivity extends Activity implements EditorView.Listener {
                         editor.addElement(e);
                     }
                 }).show();
+    }
+
+    /* ----------------------- image stickers ---------------------------- */
+
+    private static final String[] STK_FOLDERS = {"party", "kitchen", "music", "seasons", "vintage",
+            "garden", "school", "travel", "sports", "nature"};
+    private static final String[] STK_NAMES = {"מסיבה 🎉", "מטבח 🍰", "מוזיקה 🎵", "עונות ☀", "וינטג' 🕰",
+            "גינה 🌿", "בית ספר ✏", "נסיעות ✈", "ספורט ⚽", "טבע 🏕"};
+
+    private void imageStickerDialog() {
+        new AlertDialog.Builder(this).setTitle("מדבקות ואיורים")
+                .setItems(STK_NAMES, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface d, int w) { stickerCategory(w); }
+                }).show();
+    }
+
+    private void stickerCategory(final int cat) {
+        final String folder = "stickers/" + STK_FOLDERS[cat];
+        final String[] files;
+        try { files = getAssets().list(folder); } catch (Exception e) { return; }
+        if (files == null || files.length == 0) return;
+        java.util.Arrays.sort(files);
+        final android.widget.GridView grid = new android.widget.GridView(this);
+        grid.setNumColumns(4);
+        int pad = Ui.dp(this, 8);
+        grid.setPadding(pad, pad, pad, pad);
+        grid.setVerticalSpacing(pad); grid.setHorizontalSpacing(pad);
+        final Bitmap[] cache = new Bitmap[files.length];
+        grid.setAdapter(new android.widget.BaseAdapter() {
+            public int getCount() { return files.length; }
+            public Object getItem(int i) { return files[i]; }
+            public long getItemId(int i) { return i; }
+            public View getView(int i, View cv, ViewGroup parent) {
+                ImageView iv = new ImageView(EditorActivity.this);
+                iv.setLayoutParams(new android.widget.AbsListView.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(EditorActivity.this, 84)));
+                iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                iv.setPadding(6, 6, 6, 6);
+                iv.setBackground(Ui.roundBg(0xFFF6F2FB, 8, EditorActivity.this));
+                if (cache[i] == null) cache[i] = editor.getImages().decode("asset:///" + folder + "/" + files[i], 200);
+                iv.setImageBitmap(cache[i]);
+                return iv;
+            }
+        });
+        final AlertDialog dlg = new AlertDialog.Builder(this).setTitle(STK_NAMES[cat]).setView(grid)
+                .setNegativeButton("סגור", null).create();
+        grid.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
+            public void onItemClick(android.widget.AdapterView<?> p, View v, int pos, long id) {
+                addImageSticker(folder + "/" + files[pos]); dlg.dismiss();
+            }
+        });
+        dlg.show();
+    }
+
+    private void addImageSticker(String assetPath) {
+        pushUndo();
+        String uri = "asset:///" + assetPath;
+        Bitmap b = editor.getImages().get(uri);
+        float ar = (b != null && b.getHeight() > 0) ? (float) b.getWidth() / b.getHeight() : 1f;
+        Model.El e = new Model.El();
+        e.kind = Model.KIND_IMAGE; e.uri = uri;
+        int pw = project.pw();
+        float w = pw * 0.28f;
+        e.w = w; e.h = w / ar;
+        e.x = (pw - e.w) / 2; e.y = project.ph() * 0.38f;
+        editor.addElement(e);
+    }
+
+    private void editImageSticker(final Model.El e) {
+        pushUndo();
+        LinearLayout box = vbox();
+        box.addView(Ui.pillButton(this, "החלף מדבקה", 0xFF7B1FA2, 0xFFFFFFFF, new View.OnClickListener() {
+            public void onClick(View v) { dismissTop(); imageStickerDialog(); }
+        }));
+        addSectionTitle(box, "פילטר");
+        LinearLayout filters = new LinearLayout(this);
+        for (int i = 0; i < Renderer.FILTER_NAMES.length; i++) {
+            final int fi = i;
+            TextView t = Ui.pillButton(this, Renderer.FILTER_NAMES[i], 0xFFE1BEE7, 0xFF4A148C,
+                    new View.OnClickListener() { public void onClick(View v) { e.filter = fi; editor.edited(); } });
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.setMargins(Ui.dp(this, 3), 0, Ui.dp(this, 3), 0);
+            filters.addView(t, lp);
+        }
+        HorizontalScrollView fhs = new HorizontalScrollView(this); fhs.addView(filters); box.addView(fhs);
+        addSectionTitle(box, "אפקטים");
+        LinearLayout fx = new LinearLayout(this);
+        fx.addView(toggle("צל", e.dropShadow, new BoolConsumer() { public void accept(boolean b) { e.dropShadow = b; editor.edited(); } }));
+        box.addView(fx);
+        showSheet("עריכת מדבקה", box);
     }
 
     /* --------------------------- clipart ------------------------------- */
@@ -645,6 +736,7 @@ public class EditorActivity extends Activity implements EditorView.Listener {
             case Model.KIND_SHAPE: editShape(e); break;
             case Model.KIND_STICKER: editSticker(e); break;
             case Model.KIND_CLIP: editClip(e); break;
+            case Model.KIND_IMAGE: editImageSticker(e); break;
         }
     }
 

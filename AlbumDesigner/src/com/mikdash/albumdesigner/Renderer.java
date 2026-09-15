@@ -7,6 +7,7 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -132,6 +133,7 @@ public final class Renderer {
             case Model.KIND_SHAPE: drawShape(c, e, alpha); break;
             case Model.KIND_STICKER: drawSticker(c, e, alpha); break;
             case Model.KIND_CLIP: drawClip(c, e, alpha); break;
+            case Model.KIND_IMAGE: drawImage(c, e, img, alpha); break;
         }
         c.restore();
     }
@@ -145,6 +147,33 @@ public final class Renderer {
         if (e.dropShadow)
             clipPaint.setShadowLayer(Math.min(e.w, e.h) * 0.05f, Math.min(e.w, e.h) * 0.02f, Math.min(e.w, e.h) * 0.02f, e.shadowColor);
         Clipart.draw(c, e.clipId, e.x, e.y, e.w, e.h, clipPaint, e.fillColor, e.clipColor2);
+    }
+
+    private void drawImage(Canvas c, Model.El e, ImageProvider img, int alpha) {
+        Bitmap b = img != null && e.uri != null ? img.get(e.uri) : null;
+        if (b == null) {
+            p.setShader(null); p.setStyle(Paint.Style.FILL); p.setColor(0x22000000);
+            c.drawRect(e.x, e.y, e.x + e.w, e.y + e.h, p);
+            return;
+        }
+        float bw = b.getWidth(), bh = b.getHeight();
+        float s = Math.min(e.w / bw, e.h / bh);
+        float dw = bw * s, dh = bh * s;
+        float left = e.x + (e.w - dw) / 2, top = e.y + (e.h - dh) / 2;
+        if (e.dropShadow) {
+            Paint sp = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+            sp.setAlpha(alpha * 45 / 100);
+            sp.setColorFilter(new PorterDuffColorFilter(e.shadowColor | 0xFF000000, PorterDuff.Mode.SRC_ATOP));
+            float off = Math.min(e.w, e.h) * 0.03f;
+            r.set(left + off, top + off, left + dw + off, top + dh + off);
+            c.drawBitmap(b, null, r, sp);
+        }
+        bmpPaint.setAlpha(alpha);
+        bmpPaint.setColorFilter(colorFilterFor(e));
+        r.set(left, top, left + dw, top + dh);
+        c.drawBitmap(b, null, r, bmpPaint);
+        bmpPaint.setColorFilter(null);
+        bmpPaint.setAlpha(255);
     }
 
     private void drawPhoto(Canvas c, Model.El e, ImageProvider img, int alpha) {
