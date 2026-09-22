@@ -6,3 +6,4 @@ dist/
 tools/
 # Signing keystore
 *.keystore
+*.apk
