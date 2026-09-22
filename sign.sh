@@ -43,6 +43,15 @@ fi
 
 [ -f "$UNSIGNED" ] || { echo "Run ./build.sh first (missing $UNSIGNED)"; exit 1; }
 
+# The prebuilt zipalign binary links against an unversioned libc++.so. Most
+# distros ship libc++.so.1 only, so expose a symlink under tools/lib.
+mkdir -p "$TOOLS/lib"
+for base in /usr/lib/x86_64-linux-gnu /usr/lib; do
+    [ -f "$base/libc++.so.1" ] && ln -sf "$base/libc++.so.1" "$TOOLS/lib/libc++.so"
+    [ -f "$base/libc++abi.so.1" ] && ln -sf "$base/libc++abi.so.1" "$TOOLS/lib/libc++abi.so"
+done
+export LD_LIBRARY_PATH="$TOOLS/lib:/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH:-}"
+
 echo "==> zipalign"
 "$ZIPALIGN" -f -p 4 "$UNSIGNED" "$ALIGNED"
 
@@ -54,11 +63,12 @@ if [ -n "$APKSIGNER" ]; then
         --out "$RELEASE" "$ALIGNED"
     "$APKSIGNER" verify --verbose "$RELEASE"
 else
-    java -jar "$APKSIGNER_JAR" sign --ks "$KS" --ks-key-alias prisma \
+    # apksigner.jar has no Main-Class; drive the tool class directly.
+    java -cp "$APKSIGNER_JAR" com.android.apksigner.ApkSignerTool sign --ks "$KS" --ks-key-alias prisma \
         --ks-pass pass:prisma123 --key-pass pass:prisma123 \
         --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \
         --out "$RELEASE" "$ALIGNED"
-    java -jar "$APKSIGNER_JAR" verify --verbose "$RELEASE"
+    java -cp "$APKSIGNER_JAR" com.android.apksigner.ApkSignerTool verify --verbose "$RELEASE"
 fi
 
 echo "Release APK (Android 13 ready): $RELEASE"
