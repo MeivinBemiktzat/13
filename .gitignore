@@ -1,0 +1,8 @@
+# Build outputs
+build/
+dist/
+*.zip
+# Provided toolchain (large; supplied via uploads, not versioned)
+tools/
+# Signing keystore
+*.keystore
