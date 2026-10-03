@@ -4,14 +4,15 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import dev.ffmpegkit.llama.Llama
 import dev.ffmpegkit.llama.LlamaConfig
+import dev.ffmpegkit.llama.LlamaModel
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
 class ModelManager(private val context:Context){
- private var model:Any?=null
+ private var model:LlamaModel?=null
  var name:String=""
   private set
- fun load(uri:Uri,s:LlmSettings):Result<String> = runCatching{
+ suspend fun load(uri:Uri,s:LlmSettings):Result<String> = runCatching{
   val n=context.contentResolver.query(uri,arrayOf(OpenableColumns.DISPLAY_NAME),null,null,null)?.use{if(it.moveToFirst())it.getString(0)else null}?: "model.gguf"
   require(n.lowercase(Locale.ROOT).endsWith(".gguf")){"יש לבחור קובץ GGUF"}
   unload()
@@ -24,7 +25,7 @@ class ModelManager(private val context:Context){
  suspend fun complete(prompt:String,s:LlmSettings):Result<Pair<String,Double>> = runCatching{
   val m=requireNotNull(model){"לא נטען מודל GGUF"}
   val r=Llama.complete(m,prompt=prompt,systemPrompt=s.systemPrompt,maxTokens=s.maxTokens)
-  Pair(r.text,r.tokensPerSecond)
+  Pair(r.text,r.tokensPerSecond.toDouble())
  }
  fun unload(){model?.let{runCatching{Llama.releaseModel(it)}};model=null;name=""}
 }
