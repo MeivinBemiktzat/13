@@ -21,10 +21,10 @@ jobs:
         with:
           gradle-version: "8.13"
       - uses: android-actions/setup-android@v3
-      - name: Install Android SDK
+      - name: Install Android SDK packages
         run: |
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
-          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
       - name: Build APK
         run: gradle :app:assembleDebug --no-daemon --stacktrace
       - name: Package
@@ -35,15 +35,16 @@ jobs:
           (cd release && zip -r AI-Local.zip AI-Local)
       - uses: actions/upload-artifact@v4
         with:
-          name: AI-Local
+          name: AI-Local-build
           path: |
             release/AI-Local/AI-Local.apk
             release/AI-Local.zip
-      - name: GitHub Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ai-local-${{ github.run_number }}
           name: AI Local ${{ github.run_number }}
+          generate_release_notes: true
           files: |
             release/AI-Local/AI-Local.apk
             release/AI-Local/AI-Local.zip
